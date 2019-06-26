@@ -1,0 +1,16 @@
+{
+    "ColorScheme": {
+        "ForegroundColor": "DarkYellow",
+        "BackgroundColor": "DarkMagenta",
+        "ErrorForegroundColor": "Red",
+        "ErrorBackgroundColor": "DarkMagenta",
+        "WarningForegroundColor": "Yellow",
+        "WarningBackgroundColor": "DarkMagenta",
+        "DebugForegroundColor": "Magenta",
+        "DebugBackgroundColor": "DarkMagenta",
+        "VerboseForegroundColor": "Green",
+        "VerboseBackgroundColor": "DarkMagenta",
+        "ProgressForegroundColor": "Green",
+        "ProgressBackgroundColor": "DarkCyan"
+    }
+}
