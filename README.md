@@ -1,6 +1,6 @@
 # Kluster
 
-**A package to deploy and configure highly-scalable production-grade apps using kubernetes (OKV) on bare-metal platform (KVM).**
+**A package to deploy and configure highly-scalable production-grade apps using kubernetes (OKV) on a bare-metal platform (KVM).**
 
 Objectives of the project:
 
