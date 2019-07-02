@@ -6,7 +6,7 @@ param(
     [switch]$Force
 )
 
-. .steps.ps1
+. "$(Split-Path -Path $script:MyInvocation.MyCommand.Path)/.steps.ps1"
 trap { do_trap }
 
 do_script
@@ -53,13 +53,14 @@ do_step "Install/upgrade powershell modules"
 # we cannot install "vmware.PowerCLI" via chocolatey
 # because we need the -AllowClobber option to ignore collisions with the hyper-v module
 do_echo "vmware.PowerCLI"
-$installed = Get-InstalledModule -Name vmware.powerCLI
+$installed = Get-InstalledModule -Name vmware.powerCLI -ErrorAction 'Continue'
 $found = Find-Module -Name vmware.powerCLI
 if ( $installed -and ( $installed.Version.ToString() -ne $found.Version.ToString() ) ) {
     Uninstall-Module -Name vmware.powerCLI
     $installed = $null
 }
 if ( !$installed ) {
+    do_echo "... This will take a while.  Please wait ..."
     if ( $Force ) {
         Install-Module -Name vmware.powerCLI -AllowClobber -Force
     }
@@ -71,8 +72,8 @@ if ( !$installed ) {
 #
 do_step "Generate PuTTY-keys"
 
-if ( -not (Test-Path -Path "$ROOT\.certs\putty.pub") ) {
-    mkdir "$HOME\kluster\.certs"
+if ( -not (Test-Path -Path "$ROOT\.ssh\putty.pub") ) {
+    mkdir -p "$ROOT\.ssh"
 
     do_echo ""
     do_echo "Please keep this PowerShell running"
@@ -83,10 +84,10 @@ if ( -not (Test-Path -Path "$ROOT\.certs\putty.pub") ) {
     do_echo "- you can change the key comment.  A typical key comment would be your email address"
     do_echo "- DO NOT put in a key passphrase"
     do_echo "- press the Save public key button"
-    do_echo "  - navigate to your $HOME\kluster\.certs folder"
+    do_echo "  - navigate to your $ROOT\.ssh folder"
     do_echo "  - save with name 'putty.pub'"
     do_echo "- press the Save private key button"
-    do_echo "  - navigate to your $HOME\kluster\.certs folder"
+    do_echo "  - navigate to your $ROOT\.ssh folder"
     do_echo "  - save with name 'putty.ppk'"
     do_echo "- you can now close the PuTTY Key Generator window"
     do_echo ""

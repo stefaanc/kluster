@@ -73,7 +73,7 @@ This is a project that is continuously updated and possibly changing direction, 
 
 1. there is plenty of information on the web about this, for instance: https://docs.microsoft.com/en-us/virtualization/hyper-v-on-windows/quick-start/enable-hyper-v 
 
-2. optionally install [Windows Admin Center](https://www.microsoft.com/en-us/evalcenter/evaluate-windows-admin-center/) for a modern web-based GUI to manage your Windows 10 machine and Hyper-V
+2. optionally install [Windows Admin Center](https://docs.microsoft.com/en-us/windows-server/manage/windows-admin-center/overview) for a modern web-based GUI to manage your Windows 10 machine and Hyper-V
 
 
 ### Setup an ESXi server (optional)
@@ -84,7 +84,7 @@ This is a project that is continuously updated and possibly changing direction, 
 
 3. download the vSphere Hypervisor and install it
 
-4. [configure ESXi server](./documents/configure-esxi-server.html)
+4. [configure ESXi server](./documents/configure-esxi-server.md)
 
 
 ### Prepare the kluster environment

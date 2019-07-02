@@ -4,7 +4,7 @@
 #
 $STEPS_LOG_FILE = "$ROOT\logs\prepare-klusterenvironment_$( Get-Date -Format yyyyMMddTHHmmssffffZ ).log"
 
-. .steps.ps1
+. "$(Split-Path -Path $script:MyInvocation.MyCommand.Path)/.steps.ps1"
 trap { do_trap }
 
 do_script
