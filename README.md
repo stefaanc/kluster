@@ -6,8 +6,8 @@ Objectives of the project:
 
 - design a platform using OKV and KVM
 - learn and apply the technology and techniques to install, develop, test, maintain and operate
-- all installed packages must be free, unless there is no viable alternative
-- security is a major concern
+- all installed packages must be free, unless there is no viable alternative (hence the KVM virtualization platform)
+- security is a major concern (hence the OKV distribution/flavour of kubernetes)
 - the end goal is a platform that is ready for highly-scalable production-grade apps
 - everything can be installed and managed from a Windows 10 laptop
 - a Windows 10 laptop with Hyper-V and (optionally) a vmware ESXi server can be used as a small development and test environment
