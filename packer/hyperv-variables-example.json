@@ -1,0 +1,10 @@
+{
+    "switch_wan": "Virtual Switch External",
+    "network_wan": "Intel(R) Ethernet Connection I217-LM",
+
+    "switch_lan": "Virtual Switch Internal",
+    "ip_domain": "stefaanc.kluster.local",
+    "ip_address_host": "192.168.100.254",
+    "ip_address_gateway": "192.168.100.1",
+    "ip_prefix": "24"
+}

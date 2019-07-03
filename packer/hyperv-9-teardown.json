@@ -1,0 +1,31 @@
+{
+    "_use_": "packer build -on-error=ask -timestamp-ui -var-file $env:PACKER_ROOT/hyperv-variables.json -force $env:PACKER_ROOT/hyperv-9-teardown.json",
+
+    "variables": {
+        "root": "{{ env `PACKER_ROOT` }}",
+
+        "home": null,
+        "datastore": null
+    },
+    "sensitive-variables": [],
+    "builders": [
+        {
+            "type": "null",
+            "communicator": "none"
+        }
+    ],
+    "post-processors": [
+        {
+            "type": "shell-local",
+            "execute_command": ["PowerShell.exe", "-NoProfile", "{{.Vars}}{{.Script}} >> $env:LOG_FILE 5>&1 4>&1 3>&1 2>&1; exit $LASTEXITCODE"],
+            "env_var_format": "$env:%s=\"%s\"; ",
+            "tempfile_extension": ".ps1",
+            "environment_vars": [
+                "LOG_FILE={{ user `root` }}/logs/hyperv-9-teardown-{{timestamp}}.log"
+            ],
+            "scripts": [
+                "{{ user `root` }}/scripts/hyperv/Teardown.ps1"
+            ]
+        }
+    ]
+}

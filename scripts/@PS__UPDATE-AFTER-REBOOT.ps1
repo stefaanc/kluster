@@ -1,0 +1,1 @@
+Set-NetConnectionProfile -InterfaceAlias "vEthernet (Virtual Switch Internal)" -NetworkCategory Private | Out-Default
