@@ -1,0 +1,94 @@
+{
+    "_copyright_": "Copyright (c) 2019 Stefaan Coussement",
+    "_license_": "MIT",
+    "_repository_": "https://github.com/stefaanc/kluster",
+
+    "_requires_": "hyperv-1-setup.json",
+    "_use_": "packer build -color=false -on-error=ask -timestamp-ui -force -var-file $env:PACKER_ROOT/hyperv-variables.json $env:PACKER_ROOT/hyperv-2-centos7.json",
+
+    "variables": {
+        "root": "{{ env `ROOT` }}",
+        "packer": "{{ env `PACKER_ROOT` }}",
+
+        "datastore": null,
+
+        "vm_name": "centos7-hyv",
+        "switch_wan": null,
+
+        "iso_server_1": "http://centos.serverspace.co.uk/centos",
+        "iso_server_2": "http://centos.mirroring.pulsant.co.uk",
+        "iso_server_3": "http://centos.mirrors.nublue.co.uk",
+
+        "iso_path": "/7.6.1810/isos/x86_64/CentOS-7-x86_64-Minimal-1810.iso",
+        "iso_checksum": "38d5d51d9d100fd73df031ffd6bd8b1297ce24660dc8c13a3b8b4534a4bd291c",
+
+        "kickstart": "centos7.cfg",
+
+        "headless": "true",        
+        "disable_breakpoint": "true",        
+        "template_directory": "templates/centos7"
+    },
+    "sensitive-variables": [],
+    "builders": [
+        {
+            "type": "hyperv-iso",
+
+            "vm_name": "{{ user `vm_name` }}",
+            "generation": 2,
+            "enable_secure_boot": true,
+            "secure_boot_template": "MicrosoftUEFICertificateAuthority",
+            "cpus": 2,
+            "memory": 2048,
+            "enable_dynamic_memory": true,
+            "disk_size": 40960,
+            "disk_block_size": 1,
+            "switch_name": "{{ user `switch_wan` }}",
+            "mac_address": "000002000010",
+            "guest_additions_mode": "disable",
+
+            "iso_urls": [
+               "{{ user `iso_server_1` }}{{ user `iso_path` }}",
+               "{{ user `iso_server_2` }}{{ user `iso_path` }}",
+               "{{ user `iso_server_3` }}{{ user `iso_path` }}"
+            ],
+            "iso_checksum": "{{ user `iso_checksum` }}",
+            "iso_checksum_type": "sha256",
+
+            "headless": "{{ user `headless` }}",
+            "http_directory": "{{ user `packer` }}/kickstart",
+            "boot_wait": "10s",
+            "boot_command": [
+                "e",
+                "<leftCtrlOn>n<leftCtrlOff>",
+                "<leftCtrlOn>n<leftCtrlOff>",
+                "<leftCtrlOn>e<leftCtrlOff>",
+                " ip=dhcp",
+                " inst.ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/{{ user `kickstart` }}",
+                " inst.nosave=input_ks",
+                "<leftCtrlOn>x<leftCtrlOff>",
+                "<wait>"
+            ],
+
+            "communicator": "ssh",
+            "ssh_username": "root",
+            "ssh_password": "rootroot",
+            "ssh_timeout": "20m",
+
+            "shutdown_command": "shutdown -h now",
+            "output_directory": "{{ user `root` }}/{{ user `datastore` }}/{{ user `template_directory` }}"
+        }
+    ],
+    "provisioners": [
+        {
+            "type": "shell",
+            "environment_vars": [],
+            "scripts": [
+                "{{ user `packer` }}/scripts/centos7/configure-centos7.bash"
+            ]
+        },
+        {
+            "type": "breakpoint",
+            "disable": "{{ user `disable_breakpoint` }}"
+        }
+    ]
+}

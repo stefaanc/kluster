@@ -69,7 +69,7 @@ if ( -not ( Get-VMSwitch -Name "$SWITCH_WAN" -ErrorAction Ignore ) ) {
 do_step "Remove WAN switch ```"$SWITCH_WAN```" if it exists"
 if ( Get-VMSwitch -Name "$SWITCH_WAN" -ErrorAction Ignore ) {
     Remove-VMSwitch -Name "$SWITCH_WAN" -Force
-    do_echo "Switch `"$SWITCH_WAN`" removed."
+    do_echo "Switch ```"$SWITCH_WAN```" removed."
 }
 
 "@

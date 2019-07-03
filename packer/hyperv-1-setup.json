@@ -1,4 +1,8 @@
 {
+    "_copyright_": "Copyright (c) 2019 Stefaan Coussement",
+    "_license_": "MIT",
+    "_repository_": "https://github.com/stefaanc/kluster",
+
     "_remark_": "if you run 'hyperv-1-setup.json' a second time without first running 'hyperv-9-teardown.json', the setup becomes permanant",
     "_use_": "packer build -color=false -on-error=ask -timestamp-ui -force -var-file $env:PACKER_ROOT/hyperv-variables.json $env:PACKER_ROOT/hyperv-1-setup.json",
 

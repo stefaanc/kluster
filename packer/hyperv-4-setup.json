@@ -1,0 +1,49 @@
+{
+    "_copyright_": "Copyright (c) 2019 Stefaan Coussement",
+    "_license_": "MIT",
+    "_repository_": "https://github.com/stefaanc/kluster",
+
+    "_remark_": "if you run 'hyperv-4-setup.json' a second time without first running 'hyperv-9-teardown.json', the setup becomes permanant",
+    "_requires_": "hyperv-1-setup.json, hyperv-3-nethserver7.json",
+    "_use_": "packer build -color=false -on-error=ask -timestamp-ui -force -var-file $env:PACKER_ROOT/hyperv-variables.json $env:PACKER_ROOT/hyperv-4-setup.json",
+
+    "variables": {
+        "root": "{{ env `ROOT` }}",
+        "packer": "{{ env `PACKER_ROOT` }}",
+
+        "datastore": null,
+
+        "template_directory": "templates/nethserver7",
+        "vm_name": "gateway-hyv",
+        "ip_address_gateway": null,
+
+        "teardown_script": "_hyperv-teardown-4.ps1"
+    },
+    "sensitive-variables": [],
+    "builders": [
+        {
+            "type": "file",
+            "content": "Remove-Item \"{{ user `packer` }}/{{ user `teardown_script` }}\"",
+            "target": "{{ user `packer` }}/{{ user `teardown_script` }}"
+        }
+    ],
+    "post-processors": [
+        {
+            "type": "shell-local",
+            "execute_command": ["PowerShell.exe", "-NoProfile", "{{.Vars}}{{.Script}} >> $env:LOG_FILE 5>&1 4>&1 3>&1 2>&1; exit $LASTEXITCODE"],
+            "env_var_format": "$env:%s=\"%s\"; ",
+            "tempfile_extension": ".ps1",
+            "environment_vars": [
+                "TEMPLATE_DIRECTORY={{ user `root` }}/{{ user `datastore` }}/{{ user `template_directory` }}",
+                "VM_ROOT={{ user `root` }}/{{ user `datastore` }}",
+                "VM_NAME={{ user `vm_name` }}",
+                "IP_ADDRESS_LAN={{ user `ip_address_lan` }}",
+                "LOG_DIRECTORY={{ user `packer` }}/logs",
+                "TEARDOWN_SCRIPT={{ user `packer` }}/{{ user `teardown_script` }}"
+            ],
+            "scripts": [
+                "{{ user `root` }}/scripts/Setup-LANGateway.ps1"
+            ]
+        }
+    ]
+}

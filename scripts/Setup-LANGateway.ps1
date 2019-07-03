@@ -1,0 +1,128 @@
+#
+# Copyright (c) 2019 Stefaan Coussement
+# MIT License
+#
+# more info: https://github.com/stefaanc/kluster
+#
+# use in powershell:
+#
+#    Setup-LANSwitch [ "$SWITCH_LAN" [ "$IP_ADDRESS_HOST" [ "$IP_PREFIX" ]]]
+#
+# use in packer:
+#
+#    "provisioners": [
+#        {
+#            "type": "shell-local",
+#            "execute_command": ["PowerShell", "-NoProfile", "{{.Vars}}{{.Script}}; exit $LASTEXITCODE"],
+#            "env_var_format": "$env:%s=\"%s\"; ",
+#            "tempfile_extension": ".ps1",
+#            "environment_vars": [
+#                "TEMPLATE_DIRECTORY={{ user `root` }}/{{ user `datastore` }}/{{ user `template_directory` }}",
+#                "VM_ROOT={{ user `root` }}/{{ user `datastore` }}",
+#                "VM_NAME={{ user `vm_name` }}",
+#                "IP_ADDRESS_LAN={{ user `ip_address_lan` }}",
+#                "LOG_DIRECTORY={{ user `packer` }}/logs",
+#                "TEARDOWN_SCRIPT={{ user `packer` }}/{{ user `teardown_script` }}"
+#            ],
+#            "scripts": [
+#                "{{ user `root` }}/scripts/Setup-LANGateway.ps1"
+#            ]
+#        }
+#    ]
+#
+param(
+    [parameter(position=0)] $TEMPLATE_DIRECTORY = "$env:TEMPLATE_DIRECTORY",
+    [parameter(position=1)] $VM_ROOT = "$env:VM_ROOT",
+    [parameter(position=2)] $VM_NAME = "$env:VM_NAME",
+    [parameter(position=2)] $IP_ADDRESS_LAN = "$env:IP_ADDRESS_LAN",
+    [parameter(position=3)] $LOG_DIRECTORY = "$env:LOG_DIRECTORY",
+    [parameter(position=4)] $TEARDOWN_SCRIPT = "$env:TEARDOWN_SCRIPT"
+)
+if ( "$TEMPLATE_DIRECTORY" -eq "" ) { $TEMPLATE_DIRECTORY = "$ROOT\datastore\templates\nethserver7" }
+if ( "$VM_ROOT" -eq "" ) { $VM_ROOT = "$ROOT\datastore" }
+if ( "$VM_NAME" -eq "" ) { $VM_NAME = "gateway-hyv" }
+if ( "$IP_ADDRESS_LAN" -eq "" ) { $IP_ADDRESS = "192.168.2.17" }
+if ( "$LOG_DIRECTORY" -eq "" ) { $LOG_DIRECTORY = "$ROOT\logs" }
+
+# save params for second '.steps' pass
+$STEPS_PARAMS = @{
+    TEMPLATE_DIRECTORY = $TEMPLATE_DIRECTORY
+    VM_ROOT = $VM_ROOT
+    VM_NAME = $VM_NAME
+    IP_ADDRESS_LAN = $IP_ADDRESS_LAN
+    LOG_DIRECTORY = $LOG_DIRECTORY
+    TEARDOWN_SCRIPT = $TEARDOWN_SCRIPT
+}
+
+$STEPS_LOG_FILE = "$LOG_DIRECTORY\setup_langateway_$( Get-Date -Format yyyyMMddTHHmmssffffZ ).log"
+$STEPS_LOG_APPEND = $false
+
+. "$( Split-Path -Path $script:MyInvocation.MyCommand.Path )/.steps.ps1"
+trap { do_trap }
+
+do_script
+
+Import-Module -Name Hyper-V -Prefix hyv   # covers naming conflicts when using hyper-v and vmware at the same time
+$TEARDOWN = ""
+
+#
+do_step "Import VM `"$VM_NAME`" if it does not exist yet"
+
+if ( -not ( Get-hyvVM -Name "$VM_NAME" -ErrorAction Ignore ) ) {
+    $VM_DIRECTORY = "$VM_ROOT\$VM_NAME"
+    $GUID = ( Get-ChildItem "$TEMPLATE_DIRECTORY\Virtual Machines\*.vmcx" ).Name.split(".")[0]
+    Remove-Item -Recurse "$VM_DIRECTORY" -ErrorAction Ignore
+    Import-VM -Path "$TEMPLATE_DIRECTORY\Virtual Machines\$GUID.vmcx" -Copy -VirtualMachinePath "$VM_DIRECTORY" -VhdDestinationPath "$VM_DIRECTORY\Virtual Hard Disks"
+    do_echo "VM `"$VM_NAME`" imported."
+
+    # Prepare tear-down script
+    $TEARDOWN_ENTRY = @"
+do_step "Remove VM ```"$VM_NAME```" if it exists"
+if ( Get-hyvVM -Name "$VM_NAME" -ErrorAction Ignore ) {
+    Remove-hyvVM -Name "$VM_NAME" -Force
+    do_echo "VM ```"$VM_NAME```" removed."
+}
+Remove-Item -Recurse "$VM_DIRECTORY" -ErrorAction Ignore
+
+"@
+    $TEARDOWN = $TEARDOWN_ENTRY + $TEARDOWN
+}
+
+#
+do_step "Start VM `"$VM_NAME`" if it is not running yet"
+
+if ( ( Get-hyvVM -Name "$VM_NAME" ).State -ne 'Running' ) {
+    Start-hyvVM -Name "$VM_NAME"
+    do_echo "VM `"$VM_NAME`" started."
+
+    # Prepare tear-down script
+    $TEARDOWN_ENTRY = @"
+do_step "Stop VM ```"$VM_NAME```" if it is running"
+if ( ( Get-hyvVM -Name "$VM_NAME" ).State -eq 'Running' ) {
+    Stop-hyvVM -Name "$VM_NAME" -Force
+    do_echo "VM ```"$VM_NAME```" stopped."
+}
+
+"@
+    $TEARDOWN = $TEARDOWN_ENTRY + $TEARDOWN
+}
+
+#
+do_step "Wait for VM `"$VM_NAME`" to become reachable"
+
+do {
+    sleep 5
+    do_echo "Please wait for the VM to become reachable..."
+    ping $IP_ADDRESS_LAN
+} until ( "$LASTEXITCODE" -eq "0" )
+
+#
+if ( "$TEARDOWN_SCRIPT" -ne "" ) {
+    do_step "Update tear-down script"
+
+    $TEARDOWN = $TEARDOWN + "`r`n" + ( Get-Content -Raw $TEARDOWN_SCRIPT )
+    $TEARDOWN | Out-File -FilePath "$TEARDOWN_SCRIPT" -Force
+}
+
+#
+do_exit 0

@@ -1,0 +1,95 @@
+{
+    "_copyright_": "Copyright (c) 2019 Stefaan Coussement",
+    "_license_": "MIT",
+    "_repository_": "https://github.com/stefaanc/kluster",
+
+    "_requires_": "hyperv-1-setup.json, hyperv-2-centos7.json",
+    "_use_": "packer build -color=false -on-error=ask -timestamp-ui -force -var-file $env:PACKER_ROOT/hyperv-variables.json $env:PACKER_ROOT/hyperv-3-nethserver7.json",
+
+    "variables": {
+        "root": "{{ env `ROOT` }}",
+        "packer": "{{ env `PACKER_ROOT` }}",
+
+        "datastore": null,
+
+        "source_path": "templates/centos7",
+        "vm_name": "gateway-hyv",
+        "switch_wan": null,
+        "switch_lan": null,
+        "ip_domain": null,
+        "ip_address_gateway": null,
+        "ip_prefix": null,
+
+        "headless": "true",
+        "disable_breakpoint": "true",
+        "template_directory": "templates/nethserver7"
+    },
+    "sensitive-variables": [],
+    "builders": [
+        {
+            "type": "hyperv-vmcx",
+
+            "vm_name": "{{ user `vm_name` }}",
+            "enable_secure_boot": true,
+            "secure_boot_template": "MicrosoftUEFICertificateAuthority",
+            "cpus": 2,
+            "memory": 2048,
+            "enable_dynamic_memory": true,
+            "switch_name": "{{ user `switch_wan` }}",
+            "mac_address": "000002000011",
+            "guest_additions_mode": "disable",
+
+            "headless": "{{ user `headless` }}",
+            "clone_from_vmcx_path": "{{ user `root` }}/{{ user `datastore` }}/{{ user `source_path` }}",
+            "boot_wait": "0s",
+            "boot_command": "",
+
+            "communicator": "ssh",
+            "ssh_username": "root",
+            "ssh_password": "rootroot",
+            "ssh_timeout": "20m",
+
+            "shutdown_command": "shutdown -h now",
+            "output_directory": "{{ user `root` }}/{{ user `datastore` }}/{{ user `template_directory` }}"
+        }
+    ],
+    "provisioners": [
+        {
+            "type": "shell-local",
+            "execute_command": ["PowerShell.exe", "-NoProfile", "{{.Vars}}{{.Script}}; exit $LASTEXITCODE"],
+            "env_var_format": "$env:%s=\"%s\"; ",
+            "tempfile_extension": ".ps1",
+            "environment_vars": [
+                "VM_NAME={{ user `vm_name` }}",
+                "SWITCH_LAN={{ user `switch_lan` }}",
+                "ADAPTER_LAN_MAC=00:00:02:00:01:01",
+                "LOG_DIRECTORY={{ user `packer` }}/logs"
+            ],
+            "scripts": [
+                "{{ user `packer` }}/scripts/hyperv/Add-LANAdapter.ps1"
+            ]
+        },
+        {
+            "type": "shell",
+            "expect_disconnect": true,
+            "environment_vars": [
+                "VM_NAME={{ user `vm_name` }}",
+                "ADAPTER_WAN_DEVICE=eth0",
+                "ADAPTER_LAN_DEVICE=eth1",
+                "ADAPTER_LAN_MAC=00:00:02:00:01:01",
+                "IP_DOMAIN={{ user `ip_domain` }}",
+                "IP_ADDRESS_GATEWAY={{ user `ip_address_gateway` }}",
+                "IP_PREFIX={{ user `ip_prefix` }}"
+            ],
+            "scripts": [
+                "{{ user `packer` }}/scripts/centos7/configure-gateway.bash",
+                "{{ user `packer` }}/scripts/centos7/install-nethserver7.bash",
+                "{{ user `packer` }}/scripts/centos7/configure-nethserver7.bash"
+            ]
+        },
+        {
+            "type": "breakpoint",
+            "disable": "{{ user `disable_breakpoint` }}"
+        }
+    ]
+}
