@@ -10,7 +10,7 @@
 #
 # use in packer:
 #
-#    "provisioners": [
+#    "post-processors": [
 #        {
 #            "type": "shell-local",
 #            "execute_command": ["PowerShell", "-NoProfile", "{{.Vars}}{{.Script}}; exit $LASTEXITCODE"],
@@ -36,7 +36,7 @@ param(
     [parameter(position=3)] $LOG_DIRECTORY = "$env:LOG_DIRECTORY",
     [parameter(position=4)] $TEARDOWN_SCRIPT = "$env:TEARDOWN_SCRIPT"
 )
-if ( "$SWITCH_LAN" -eq "" ) { $SWITCH_WAN = "Virtual Switch Internal" }
+if ( "$SWITCH_LAN" -eq "" ) { $SWITCH_LAN = "Virtual Switch Internal" }
 if ( "$IP_ADDRESS_HOST" -eq "" ) { $IP_ADDRESS_HOST = "192.168.0.254" }
 if ( "$IP_PREFIX" -eq "" ) { $IP_PREFIX = "24" }
 if ( "$LOG_DIRECTORY" -eq "" ) { $LOG_DIRECTORY = "$ROOT\logs" }
@@ -53,7 +53,7 @@ $STEPS_PARAMS = @{
 $STEPS_LOG_FILE = "$LOG_DIRECTORY\setup_lanswitch_$( Get-Date -Format yyyyMMddTHHmmssffffZ ).log"
 $STEPS_LOG_APPEND = $false
 
-. "$(Split-Path -Path $script:MyInvocation.MyCommand.Path)/.steps.ps1"
+. "$( Split-Path -Path $script:MyInvocation.MyCommand.Path )/.steps.ps1"
 trap { do_trap }
 
 do_script
@@ -62,30 +62,45 @@ Import-Module -Name Hyper-V -Prefix hyv   # covers naming conflicts when using h
 $TEARDOWN = ""
 
 #
-do_step "Create LAN switch `"$env:SWITCH_LAN`" if it does not exist yet"
+do_step "Create LAN switch `"$SWITCH_LAN`" if it does not exist yet"
 
-if ( -not (Get-VMSwitch -Name "$env:SWITCH_LAN" -ErrorAction Ignore) ) {
-    New-VMSwitch -SwitchName "$env:SWITCH_LAN" -SwitchType Internal
-    New-NetIPAddress -IPAddress "$env:IP_ADDRESS_HOST" -PrefixLength "$env:IP_PREFIX" -SkipAsSource $true -InterfaceAlias "vEthernet ($env:SWITCH_LAN)"
+if ( -not ( Get-VMSwitch -Name "$SWITCH_LAN" -ErrorAction Ignore ) ) {
+    New-VMSwitch -SwitchName "$SWITCH_LAN" -SwitchType Internal
+    New-NetIPAddress -IPAddress "$IP_ADDRESS_HOST" -PrefixLength "$IP_PREFIX" -SkipAsSource $true -InterfaceAlias "vEthernet ($SWITCH_LAN)"
+    do_echo "Switch `"$SWITCH_LAN`" created."
 
     if ( "$TEARDOWN_SCRIPT" -ne "" ) {
         $TEARDOWN_ENTRY = @"
-do_step "Remove LAN switch ```"$env:SWITCH_LAN```""
-Remove-VMSwitch -Name "$env:SWITCH_LAN" -Force
+do_step "Remove LAN switch ```"$SWITCH_LAN```" if it exists"
+if ( Get-VMSwitch -Name "$SWITCH_LAN" -ErrorAction Ignore ) {
+    Remove-VMSwitch -Name "$SWITCH_LAN" -Force
+    do_echo "Switch `"$SWITCH_LAN`" removed."
+}
 
 "@
-        $TEARDOWN = ($TEARDOWN_ENTRY + $TEARDOWN)
+        $TEARDOWN = $TEARDOWN_ENTRY + $TEARDOWN
     }
 }
 
 #
 do_step "Set 'Private' network category"
 
-While ( (Get-NetConnectionProfile -InterfaceAlias "vEthernet ($env:SWITCH_LAN)").NetworkCategory -ne "Private" ) {
-    Set-NetConnectionProfile -InterfaceAlias "vEthernet ($env:SWITCH_LAN)" -NetworkCategory Private -ErrorAction SilentlyContinue
-    if ( -not $? ) {   # we observed that this sometimes fails because the network is mark "identifying"
-        do_echo $Error[0].Exception.Message
-        Start-Sleep 5
+While ( ( Get-NetConnectionProfile -InterfaceAlias "vEthernet ($SWITCH_LAN)").NetworkCategory -ne "Private" ) {
+    try {
+        # 'Set-NetConnectionProfile' cmdlet doesn't seem to pickup "$ErrorActionPreference = 'Stop'",
+        # and instead may hang (f.i. when using a non-existing interface-alias), so set error-action explicitly
+        Set-NetConnectionProfile -InterfaceAlias "vEthernet ($SWITCH_LAN)" -NetworkCategory Private -ErrorAction 'Stop'
+    }
+    catch {
+        # We observed that this sometimes fails because the network is marked "Identifying",
+        # but it succeeds after some time
+        if ( $Error[0].Exception.Message -like "*'Identifying...'*" ) {
+            do_echo "Please wait for network identification to complete..."
+            Start-Sleep 5
+        }
+        else {
+            throw $Error[0]
+        }
     }
 }
 
@@ -93,8 +108,8 @@ While ( (Get-NetConnectionProfile -InterfaceAlias "vEthernet ($env:SWITCH_LAN)")
 if ( "$TEARDOWN_SCRIPT" -ne "" ) {
     do_step "Update tear-down script"
 
-    $TEARDOWN = $TEARDOWN + "`n" + (Get-Content $env:TEARDOWN_SCRIPT)
-    $TEARDOWN | Out-File -FilePath "$env:TEARDOWN_SCRIPT" -Force
+    $TEARDOWN = $TEARDOWN + "`r`n" + ( Get-Content -Raw $TEARDOWN_SCRIPT )
+    $TEARDOWN | Out-File -FilePath "$TEARDOWN_SCRIPT" -Force
 }
 
 #

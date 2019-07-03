@@ -2,6 +2,12 @@
 # Copyright (c) 2019 Stefaan Coussement
 # MIT License
 #
+# more info: https://github.com/stefaanc/kluster
+#
+# use:
+#
+#    Generate-RootCACertificates [ "$IP_DOMAIN" ]
+#
 param(
     [parameter(position=0)] $IP_DOMAIN = "$env:IP_DOMAIN"
 )
@@ -15,28 +21,28 @@ $STEPS_PARAMS = @{
 $STEPS_LOG_FILE = "$ROOT\logs\generate-rootcacertificates_$( Get-Date -Format yyyyMMddTHHmmssffffZ ).log"
 $STEPS_LOG_APPEND = $false
 
-. "$(Split-Path -Path $script:MyInvocation.MyCommand.Path)/.steps.ps1"
+. "$( Split-Path -Path $script:MyInvocation.MyCommand.Path )/.steps.ps1"
 trap { do_trap }
 
 do_script
 
 #
 # workaround for issue with openssl finding the .rnd file
-$SAVED_LOCATION = (Get-Location).Path
+$SAVED_LOCATION = ( Get-Location ).Path
 Set-Location "$HOME"
 
 #
 do_step "Create folder for certificates"
 
 $PATH = "$ROOT\.pki\$IP_DOMAIN"
-if ( -not (Test-Path -Path "$PATH") ) {
+if ( -not ( Test-Path -Path "$PATH" ) ) {
     New-Item -ItemType "directory" -Path "$PATH"
 }
 
 #
 do_step "Initialise openSSL"
 
-if ( -not (Test-Path -Path "$HOME\.rnd") ) {
+if ( -not ( Test-Path -Path "$HOME\.rnd" ) ) {
     $ErrorActionPreference = 'Continue'
     openssl genrsa -writerand "$HOME\.rnd" 2048 | Out-Null; do_catch_exit -IgnoreExitStatus
     $ErrorActionPreference = 'Stop'

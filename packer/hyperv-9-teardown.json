@@ -1,11 +1,8 @@
 {
-    "_use_": "packer build -on-error=ask -timestamp-ui -var-file $env:PACKER_ROOT/hyperv-variables.json -force $env:PACKER_ROOT/hyperv-9-teardown.json",
+    "_use_": "packer build -color=false -on-error=ask -timestamp-ui -force -var-file $env:PACKER_ROOT/hyperv-variables.json $env:PACKER_ROOT/hyperv-9-teardown.json",
 
     "variables": {
-        "root": "{{ env `PACKER_ROOT` }}",
-
-        "home": null,
-        "datastore": null
+        "packer": "{{ env `PACKER_ROOT` }}"
     },
     "sensitive-variables": [],
     "builders": [
@@ -17,14 +14,15 @@
     "post-processors": [
         {
             "type": "shell-local",
-            "execute_command": ["PowerShell.exe", "-NoProfile", "{{.Vars}}{{.Script}} >> $env:LOG_FILE 5>&1 4>&1 3>&1 2>&1; exit $LASTEXITCODE"],
+            "execute_command": ["PowerShell.exe", "-NoProfile", "{{.Vars}}{{.Script}}; exit $LASTEXITCODE"],
             "env_var_format": "$env:%s=\"%s\"; ",
             "tempfile_extension": ".ps1",
             "environment_vars": [
-                "LOG_FILE={{ user `root` }}/logs/hyperv-9-teardown-{{timestamp}}.log"
+                "LOG_DIRECTORY={{ user `packer` }}/logs",
+                "TEARDOWN_DIRECTORY={{ user `packer` }}"
             ],
             "scripts": [
-                "{{ user `root` }}/scripts/hyperv/Teardown.ps1"
+                "{{ user `packer` }}/scripts/hyperv/Teardown.ps1"
             ]
         }
     ]

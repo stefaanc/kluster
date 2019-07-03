@@ -2,13 +2,19 @@
 # Copyright (c) 2019 Stefaan Coussement
 # MIT License
 #
+# more info: https://github.com/stefaanc/kluster
+#
+# use:
+#
+#    Generate-ESXIServerCertificates "$IP_ADDRESS" [ "$SERVER_NAME" [ "$IP_DOMAIN" ]]
+#
 param(
-    [parameter(position=0)] $IP_DOMAIN = "$env:IP_DOMAIN",
-    [parameter(mandatory, position=1)] $IP_ADDRESS = "$env:IP_ADDRESS",
-    [parameter(position=2)] $SERVER_NAME = "$env:SERVER_NAME"
+    [parameter(mandatory, position=0)] $IP_ADDRESS = "$env:IP_ADDRESS",
+    [parameter(position=1)] $SERVER_NAME = "$env:SERVER_NAME",
+    [parameter(position=2)] $IP_DOMAIN = "$env:IP_DOMAIN"
 )
-if ( "$IP_DOMAIN" -eq "" ) { $IP_DOMAIN = "kluster.local" }
 if ( "$SERVER_NAME" -eq "" ) { $SERVER_NAME = "esxiserver" }
+if ( "$IP_DOMAIN" -eq "" ) { $IP_DOMAIN = "kluster.local" }
 
 # save params for second '.steps' pass
 $STEPS_PARAMS = @{
@@ -20,7 +26,7 @@ $STEPS_PARAMS = @{
 $STEPS_LOG_FILE = "$ROOT\logs\generate-esxiservercertificates_$( Get-Date -Format yyyyMMddTHHmmssffffZ ).log"
 $STEPS_LOG_APPEND = $false
 
-. "$(Split-Path -Path $script:MyInvocation.MyCommand.Path)/.steps.ps1"
+. "$( Split-Path -Path $script:MyInvocation.MyCommand.Path )/.steps.ps1"
 trap { do_trap }
 
 do_script
@@ -34,7 +40,7 @@ do_step "Create folder for certificates"
 
 $SERVER_DOMAIN="$SERVER_NAME.$IP_DOMAIN"
 $PATH="$ROOT/.pki/$SERVER_DOMAIN"
-if ( -not (Test-Path -Path "$PATH") ) {
+if ( -not ( Test-Path -Path "$PATH" ) ) {
     New-Item -ItemType "directory" -Path "$PATH"
 }
 
@@ -42,7 +48,7 @@ if ( -not (Test-Path -Path "$PATH") ) {
 do_step "Check/create rootCA certificates"
 
 $CA_PATH="$ROOT/.pki/$IP_DOMAIN"
-if ( -not (Test-Path -Path "$CA_PATH") ) {
+if ( -not ( Test-Path -Path "$CA_PATH" ) ) {
     Generate-RootCACertificates "$IP_DOMAIN"
 }
 
@@ -72,7 +78,7 @@ Remove-Item -Force "$PATH/ca.csr"
 #
 do_step "Generate a certificate-bundle for 'ca@$SERVER_DOMAIN'"
 
-(Get-Content -Raw "$PATH/ca@$SERVER_DOMAIN.crt") + (Get-Content -Raw "$CA_PATH/ca@$IP_DOMAIN.crt") | Set-Content "$PATH/ca@$SERVER_DOMAIN.crt.bundle"
+( Get-Content -Raw "$PATH/ca@$SERVER_DOMAIN.crt" ) + ( Get-Content -Raw "$CA_PATH/ca@$IP_DOMAIN.crt" ) | Set-Content "$PATH/ca@$SERVER_DOMAIN.crt.bundle"
 
 #
 do_step "Generate a certificate for 'ca@$SERVER_DOMAIN' in the browser"
@@ -124,8 +130,8 @@ Remove-Item -Force "$PATH/server.csr"
 #
 do_step "Prepare certificates for ESXi server"
 
-(Get-Content -Raw "$PATH/server@$SERVER_DOMAIN.key").Replace("`r`n", "`n") | Set-Content -NoNewLine "$PATH/rui.key"
-(Get-Content -Raw "$PATH/server@$SERVER_DOMAIN.crt").Replace("`r`n", "`n") | Set-Content -NoNewLine "$PATH/rui.crt"
+( Get-Content -Raw "$PATH/server@$SERVER_DOMAIN.key" ).Replace("`r`n", "`n") | Set-Content -NoNewLine "$PATH/rui.key"
+( Get-Content -Raw "$PATH/server@$SERVER_DOMAIN.crt" ).Replace("`r`n", "`n") | Set-Content -NoNewLine "$PATH/rui.crt"
 
 do_echo ""
 do_echo "To install certs on ESXi server:"

@@ -2,11 +2,14 @@
 # Copyright (c) 2019 Stefaan Coussement
 # MIT License
 #
+# more info: https://github.com/stefaanc/kluster
+#
+
 param(
     [switch]$Force
 )
 
-. "$(Split-Path -Path $script:MyInvocation.MyCommand.Path)/.steps.ps1"
+. "$( Split-Path -Path $script:MyInvocation.MyCommand.Path )/.steps.ps1"
 trap { do_trap }
 
 do_script
@@ -72,7 +75,7 @@ if ( !$installed ) {
 #
 do_step "Generate PuTTY-keys"
 
-if ( -not (Test-Path -Path "$ROOT\.ssh\putty.pub") ) {
+if ( -not ( Test-Path -Path "$ROOT\.ssh\putty.pub" ) ) {
     mkdir -p "$ROOT\.ssh"
 
     do_echo ""

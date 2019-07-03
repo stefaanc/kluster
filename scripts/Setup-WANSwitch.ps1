@@ -6,11 +6,11 @@
 #
 # use in powershell:
 #
-#    Setup-LANSwitch [ "$SWITCH_WAN" [ "$NETWORK_WAN_NIC" ]]
+#    Setup-WANSwitch [ "$SWITCH_WAN" [ "$NETWORK_WAN_NIC" ]]
 #
 # use in packer:
 #
-#    "provisioners": [
+#    "post-processors": [
 #        {
 #            "type": "shell-local",
 #            "execute_command": ["PowerShell", "-NoProfile", "{{.Vars}}{{.Script}}; exit $LASTEXITCODE"],
@@ -35,7 +35,7 @@ param(
     [parameter(position=3)] $TEARDOWN_SCRIPT = "$env:TEARDOWN_SCRIPT"
 )
 if ( "$SWITCH_WAN" -eq "" ) { $SWITCH_WAN = "Virtual Switch External" }
-if ( "$NETWORK_WAN_NIC" -eq "" ) { $NETWORK_WAN_NIC = "esxiserver" }
+if ( "$NETWORK_WAN_NIC" -eq "" ) { $NETWORK_WAN_NIC = ( Get-NetAdapterHardwareInfo )[0].InterfaceDescription }
 if ( "$LOG_DIRECTORY" -eq "" ) { $LOG_DIRECTORY = "$ROOT\logs" }
 
 # save params for second '.steps' pass
@@ -46,10 +46,10 @@ $STEPS_PARAMS = @{
     TEARDOWN_SCRIPT = $TEARDOWN_SCRIPT
 }
 
-$STEPS_LOG_FILE = "$LOG_DIRECTORY\setup_wan_switch_$( Get-Date -Format yyyyMMddTHHmmssffffZ ).log"
+$STEPS_LOG_FILE = "$LOG_DIRECTORY\setup_wanswitch_$( Get-Date -Format yyyyMMddTHHmmssffffZ ).log"
 $STEPS_LOG_APPEND = $false
 
-. "$(Split-Path -Path $script:MyInvocation.MyCommand.Path)/.steps.ps1"
+. "$( Split-Path -Path $script:MyInvocation.MyCommand.Path )/.steps.ps1"
 trap { do_trap }
 
 do_script
@@ -58,18 +58,22 @@ Import-Module -Name Hyper-V -Prefix hyv   # covers naming conflicts when using h
 $TEARDOWN = ""
 
 #
-do_step "Create WAN switch `"$env:SWITCH_WAN`" if it does not exist yet"
+do_step "Create WAN switch `"$SWITCH_WAN`" if it does not exist yet"
 
-if ( -not (Get-VMSwitch -Name "$env:SWITCH_WAN" -ErrorAction Ignore) ) {
-    New-VMSwitch -SwitchName "$env:SWITCH_WAN" -NetAdapterInterfaceDescription "$env:NETWORK_WAN_NIC"
+if ( -not ( Get-VMSwitch -Name "$SWITCH_WAN" -ErrorAction Ignore ) ) {
+    New-VMSwitch -SwitchName "$SWITCH_WAN" -NetAdapterInterfaceDescription "$NETWORK_WAN_NIC"
+    do_echo "Switch `"$SWITCH_WAN`" created."
 
     if ( "$TEARDOWN_SCRIPT" -ne "" ) {
         $TEARDOWN_ENTRY = @"
-do_step "Remove WAN switch ```"$env:SWITCH_WAN```""
-Remove-VMSwitch -Name "$env:SWITCH_WAN" -Force
+do_step "Remove WAN switch ```"$SWITCH_WAN```" if it exists"
+if ( Get-VMSwitch -Name "$SWITCH_WAN" -ErrorAction Ignore ) {
+    Remove-VMSwitch -Name "$SWITCH_WAN" -Force
+    do_echo "Switch `"$SWITCH_WAN`" removed."
+}
 
 "@
-        $TEARDOWN = ($TEARDOWN_ENTRY + $TEARDOWN)
+        $TEARDOWN = $TEARDOWN_ENTRY + $TEARDOWN
     }
 }
 
@@ -77,8 +81,8 @@ Remove-VMSwitch -Name "$env:SWITCH_WAN" -Force
 if ( "$TEARDOWN_SCRIPT" -ne "" ) {
     do_step "Update tear-down script"
 
-    $TEARDOWN = $TEARDOWN + "`n" + (Get-Content $env:TEARDOWN_SCRIPT)
-    $TEARDOWN | Out-File -FilePath "$env:TEARDOWN_SCRIPT" -Force
+    $TEARDOWN = $TEARDOWN + "`r`n" + ( Get-Content -Raw $TEARDOWN_SCRIPT )
+    $TEARDOWN | Out-File -FilePath "$TEARDOWN_SCRIPT" -Force
 }
 
 #

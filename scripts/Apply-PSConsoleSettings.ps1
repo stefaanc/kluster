@@ -1,4 +1,9 @@
 #
+# Copyright (c) 2019 Stefaan Coussement
+# MIT License
+#
+# more info: https://github.com/stefaanc/steps
+#
 # use:
 #
 # Set-PSConsoleColorScheme.ps1 psconsole-colorscheme.json
@@ -43,9 +48,9 @@
 #
 $PSColorSchemeJSON = $args[0]
 
-$CS = (Get-Content -Raw -Path $PSColorSchemeJSON | ConvertFrom-Json).ColorScheme
+$CS = ( Get-Content -Raw -Path $PSColorSchemeJSON | ConvertFrom-Json ).ColorScheme
 
-if ($host.name -eq 'ConsoleHost') {
+if ( $host.name -eq 'ConsoleHost' ) {
     $host.ui.RawUI.ForegroundColor = $CS.ForegroundColor
     $host.ui.RawUI.BackgroundColor = $CS.BackgroundColor
     $host.PrivateData.ErrorForegroundColor = $CS.ErrorForegroundColor

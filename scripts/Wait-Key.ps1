@@ -2,6 +2,8 @@
 # Copyright (c) 2019 Stefaan Coussement
 # MIT License
 #
+# more info: https://github.com/stefaanc/kluster
+#
 
 Write-Host ""
 Write-Host -NoNewLine 'Press any key to continue . . . '
