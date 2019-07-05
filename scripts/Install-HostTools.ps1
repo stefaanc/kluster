@@ -75,8 +75,10 @@ if ( !$installed ) {
 #
 do_step "Generate PuTTY-keys"
 
+if ( -not ( Test-Path -Path "$ROOT\.ssh" ) ) {
+    New-Item -Type 'directory' -Path "$ROOT\.ssh"
+}
 if ( -not ( Test-Path -Path "$ROOT\.ssh\putty.pub" ) ) {
-    mkdir -p "$ROOT\.ssh"
 
     do_echo ""
     do_echo "Please keep this PowerShell running"
