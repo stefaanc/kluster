@@ -37,7 +37,10 @@ This is a project that is continuously updated and possibly changing direction, 
      - or rename the original file and copy the `~\Projects\kluster\downloads\profile.ps` file  
 
    - if you are using a different root folder for the "kluster" project (see 1.), edit the `~\Documents\WindowsPowerShell\profile.ps1` file
-     - change the `. ~\Projects\kluster\.psprofile.ps1` line to `. ~\xyz\kluster\.psprofile.ps1`
+     - change the `. ~\Projects\.psprofile.ps1` line to `. ~\xyz\.psprofile.ps1` or `. ~\xyz\kluster\.psprofile.ps1` any other profile that you want to use as default.
+
+   > :information_source:  
+   > We are using the profile and PowerShell console setup from the https://github.com/stefaanc/psconsole project here.  Have a look if you want to understand better how this works.
 
 
 3. open a PowerShell terminal
