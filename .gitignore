@@ -1,10 +1,12 @@
 /**/_*
+/**/*.lnk
 /**/logs/
 /**/playground/
 
 /.certs
 /.pki
 /.ssh
+
 /datastore
 
 /packer/packer-cache

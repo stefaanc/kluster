@@ -1,18 +1,14 @@
 Set-Variable HOME "$env:USERPROFILE" -Scope Global -Force
 ( Get-PSProvider 'FileSystem' ).Home = $HOME   # replace "~"
 
-$ROOT = "$HOME\Projects\kluster"
-$PATH = "$ROOT\scripts;$env:PATH"
-
-$env:HOME = $HOME
-$env:ROOT = $ROOT
-$env:PATH = $PATH
+$global:ROOT = "$HOME\Projects\kluster"
+$env:PATH = "$ROOT\scripts;$env:PATH"
 
 if ( -not ( Get-Location ).Path.StartsWith("$ROOT") ) {
     Set-Location "$ROOT"
 }
 
-. Apply-PSConsoleSettings "KLUSTER"
+Apply-PSConsoleSettings "KLUSTER"
 
 $env:PACKER_ROOT = "$ROOT/packer".Replace("\", "/")
 $env:PACKER_NO_COLOR = "true"
