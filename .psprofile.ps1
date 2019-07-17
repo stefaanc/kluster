@@ -10,6 +10,11 @@ if ( -not ( Get-Location ).Path.StartsWith("$ROOT") ) {
 
 Apply-PSConsoleSettings "KLUSTER"
 
+#
+# for packer
+$env:HOME = "$HOME"
+$env:ROOT = "$ROOT"
+
 $env:PACKER_ROOT = "$ROOT/packer".Replace("\", "/")
 $env:PACKER_NO_COLOR = "true"
 $env:PACKER_CACHE_DIR = "$env:PACKER_ROOT/packer_cache"

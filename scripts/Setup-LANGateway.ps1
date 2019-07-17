@@ -98,7 +98,7 @@ if ( ( Get-hyvVM -Name "$VM_NAME" ).State -ne 'Running' ) {
     # Prepare tear-down script
     $TEARDOWN_ENTRY = @"
 do_step "Stop VM ```"$VM_NAME```" if it is running"
-if ( ( Get-hyvVM -Name "$VM_NAME" ).State -eq 'Running' ) {
+if ( ( Get-hyvVM -Name "$VM_NAME" -ErrorAction Ignore ) -and ( ( Get-hyvVM -Name "$VM_NAME" ).State -eq 'Running' ) ) {
     Stop-hyvVM -Name "$VM_NAME" -Force
     do_echo "VM ```"$VM_NAME```" stopped."
 }
