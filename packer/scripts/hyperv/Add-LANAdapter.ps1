@@ -40,6 +40,8 @@ $STEPS_PARAMS = @{
     LOG_DIRECTORY = $LOG_DIRECTORY
 }
 
+$STEPS_COLORS = $env:STEPS_HYPERV_COLORS
+
 $STEPS_LOG_FILE = "$LOG_DIRECTORY\add_lanadapter_$( Get-Date -Format yyyyMMddTHHmmssffffZ ).log"
 $STEPS_LOG_APPEND = $false
 

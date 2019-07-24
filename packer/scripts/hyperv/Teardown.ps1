@@ -33,6 +33,8 @@ $STEPS_PARAMS = @{
     TEARDOWN_DIRECTORY = $TEARDOWN_DIRECTORY
 }
 
+$STEPS_COLORS = $env:STEPS_HYPERV_COLORS
+
 $STEPS_LOG_FILE = "$LOG_DIRECTORY\teardown_$( Get-Date -Format yyyyMMddTHHmmssffffZ ).log"
 $STEPS_LOG_APPEND = $false
 

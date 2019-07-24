@@ -42,7 +42,7 @@
                 "TEARDOWN_SCRIPT={{ user `packer` }}/{{ user `teardown_script` }}"
             ],
             "scripts": [
-                "{{ user `root` }}/scripts/Setup-LANGateway.ps1"
+                "{{ user `packer` }}/scripts/hyperv/Setup-LANGateway.ps1"
             ]
         }
     ]

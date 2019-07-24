@@ -1,0 +1,26 @@
+{
+    "console": {
+        "ScreenTextColor": 6,
+        "ScreenBackgroundColor": 5,
+        "PopupTextColor": 3,
+        "PopupBackgroundColor": 15,
+        "ConsoleColors": [
+            "#000000",
+            "#000080",
+            "#008000",
+            "#008080",
+            "#800000",
+            "#012456",
+            "#eeedf0",
+            "#c0c0c0",
+            "#808080",
+            "#0000ff",
+            "#00ff00",
+            "#00ffff",
+            "#ff0000",
+            "#ff00ff",
+            "#ffff00",
+            "#ffffff"
+        ]
+    }
+}

@@ -46,6 +46,8 @@ $STEPS_PARAMS = @{
     TEARDOWN_SCRIPT = $TEARDOWN_SCRIPT
 }
 
+$STEPS_COLORS = $env:STEPS_HYPERV_COLORS
+
 $STEPS_LOG_FILE = "$LOG_DIRECTORY\setup_wanswitch_$( Get-Date -Format yyyyMMddTHHmmssffffZ ).log"
 $STEPS_LOG_APPEND = $false
 

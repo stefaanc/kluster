@@ -43,8 +43,8 @@
                 "TEARDOWN_SCRIPT={{ user `packer` }}/{{ user `teardown_script` }}"
             ],
             "scripts": [
-                "{{ user `root` }}/scripts/Setup-WANSwitch.ps1",
-                "{{ user `root` }}/scripts/Setup-LANSwitch.ps1"
+                "{{ user `packer` }}/scripts/hyperv/Setup-WANSwitch.ps1",
+                "{{ user `packer` }}/scripts/hyperv/Setup-LANSwitch.ps1"
             ]
         }
     ]

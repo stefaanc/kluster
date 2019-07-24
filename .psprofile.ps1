@@ -20,3 +20,7 @@ $env:PACKER_NO_COLOR = "true"
 $env:PACKER_CACHE_DIR = "$env:PACKER_ROOT/packer_cache"
 $env:PACKER_LOG_PATH = "$env:PACKER_ROOT/logs/_packer.log"
 $env:PACKER_LOG = "0"
+
+$e = [char]27
+$env:STEPS_HYPERV_COLORS = "$e[34m,$e[33m,$e[92m,$e[93m,$e[91m,$e[0m"
+#                           normal,bright,green ,yellow,red   ,reset

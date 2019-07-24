@@ -13,8 +13,8 @@ if ( !(Get-Variable -Name "STEPS_COLORS" -ErrorAction 'Ignore') ) {
 }
 if ( "$STEPS_COLORS" -eq "" ) {
     $e = [char]27
-    ${N}="$e[38;5;45m"; ${G}="$e[92m"; ${Y}="$e[93m"; ${R}="$e[91m"; ${X}="$e[0m"
-    #     normal      ;       green  ;       yellow ;       red    ;       reset
+    ${N}="$e[33m"; ${B}="$e[96m"; ${G}="$e[92m"; ${Y}="$e[93m"; ${R}="$e[91m"; ${X}="$e[0m"
+    #     normal ;       bright;       green  ;       yellow ;       red    ;       reset
 }
 else {
     $COLORS = "$STEPS_COLORS".Split(",")
@@ -203,7 +203,7 @@ function do_echo {
     process {
         "$message".Replace("`r`n", "`n").Split("`n") | foreach-object {
             $line = "$_".TrimEnd()
-            Write-Information "${Y}${STEPS_INDENT}.   $line${X}"
+            Write-Information "${B}${STEPS_INDENT}.   $line${X}"
             Write-Output "# $line"
         }
     }

@@ -16,4 +16,7 @@ do_script
 & Install-HostTools -Force
 
 #
+& Create-Shortcuts
+
+#
 do_exit 0
