@@ -6,7 +6,7 @@
 #
 # use:
 #
-#     Set-PSConsoleColors "$Path" [ -Theme "$Theme" ]
+#     Set-ShortcutColors "$Path" [ -Theme "$Theme" ]
 #
 # with default $Theme = "$ROOT\colors\psconsole-powershell-legacy.json"
 #

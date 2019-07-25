@@ -6,7 +6,7 @@
 #
 # use:
 #
-#     Set-PSConsoleWindowSize "$Path" -Width 120 -Height 50 -ScreenBufferHeight 8000
+#     Set-ShortcutWindowSize "$Path" -Width 120 -Height 50 -ScreenBufferHeight 8000
 #
 param(
     [Parameter(Mandatory=$true, Position=0)][string]$Path,
