@@ -15,39 +15,43 @@ $powershell_theme = "$ROOT\colors\psconsole-powershell-dark.json"
 $psprofile = "$PSScriptRoot\..\.psprofile.ps1"
 
 #
-do_step "Create shortcut 'scripts\@CP_Start-PowerShellUser'"
+do_step "Create shortcuts for powershell"
 
+do_echo "@CP_Start-PowerShellUser"
 New-Shortcut "$ROOT\scripts\@CP_Start-PowerShellUser" -TargetPath "C:\Windows\system32\WindowsPowerShell\v1.0\powershell.exe" -Arguments "-ExecutionPolicy Bypass -NoProfile -NoExit -Command `"$psprofile`""
 Set-ShortcutColors "$ROOT\scripts\@CP_Start-PowerShellUser" -Theme "$powershell_theme"
 Set-ShortcutWindowSize "$ROOT\scripts\@CP_Start-PowerShellUser" -Width 120 -Height 50 -ScreenBufferHeight 8000
 
-#
-do_step "Create shortcut 'scripts\@CP_Start-PowerShellAdmin'"
-
+do_echo "@CP_Start-PowerShellAdmin"
 New-Shortcut "$ROOT\scripts\@CP_Start-PowerShellAdmin" -Admin -TargetPath "C:\Windows\system32\WindowsPowerShell\v1.0\powershell.exe" -Arguments "-ExecutionPolicy Bypass -NoProfile -NoExit -Command `"$psprofile`""
 Set-ShortcutColors "$ROOT\scripts\@CP_Start-PowerShellAdmin" -Theme "$powershell_theme"
 Set-ShortcutWindowSize "$ROOT\scripts\@CP_Start-PowerShellAdmin" -Width 120 -Height 50 -ScreenBufferHeight 8000
 
 #
-do_step "Create shortcut 'packer\@CP_hyperv-build'"
+do_step "Create shortcuts for scripts"
 
-New-Shortcut "$ROOT\packer\@CP_hyperv-build" -Admin -TargetPath "C:\Windows\system32\WindowsPowerShell\v1.0\powershell.exe" -Arguments "-ExecutionPolicy Bypass -NoProfile -Command `"$psprofile; $ROOT\packer\@PS_hyperv-build.ps1`"; Wait-Key; exit 0"
-Set-ShortcutColors "$ROOT\packer\@CP_hyperv-build" -Theme "$ROOT\colors\psconsole-colorized-light-azure.json"
-Set-ShortcutWindowSize "$ROOT\packer\@CP_hyperv-build" -Width 150 -Height 50 -ScreenBufferHeight 8000
+Get-ChildItem -Path "$ROOT\scripts\@PS_*.ps1" | ForEach-Object -Process {
+    $name = $( Split-Path $_ -Leaf ).Split(".")[0].Substring(4)
+
+    if ( -not ( Test-Path "$ROOT\scripts\@CP_$name.bat") ) {
+        do_echo "@CP_$name"
+        New-Shortcut "$ROOT\scripts\@CP_$name" -Admin -TargetPath "C:\Windows\system32\WindowsPowerShell\v1.0\powershell.exe" -Arguments "-ExecutionPolicy Bypass -NoProfile -Command `"$psprofile; $ROOT\scripts\@PS_$name.ps1`"; Wait-Key; exit 0"
+        Set-ShortcutColors "$ROOT\scripts\@CP_$name" -Theme "$ROOT\colors\psconsole-colorized-light-azure.json"
+        Set-ShortcutWindowSize "$ROOT\scripts\@CP_$name" -Width 150 -Height 50 -ScreenBufferHeight 8000
+    }
+}
 
 #
-do_step "Create shortcut 'packer\@CP_hyperv-setup'"
+do_step "Create shortcuts for packer"
 
-New-Shortcut "$ROOT\packer\@CP_hyperv-setup" -Admin -TargetPath "C:\Windows\system32\WindowsPowerShell\v1.0\powershell.exe" -Arguments "-ExecutionPolicy Bypass -NoProfile -Command `"$psprofile; $ROOT\packer\@PS_hyperv-setup.ps1`"; Wait-Key; exit 0"
-Set-ShortcutColors "$ROOT\packer\@CP_hyperv-setup" -Theme "$ROOT\colors\psconsole-colorized-light-azure.json"
-Set-ShortcutWindowSize "$ROOT\packer\@CP_hyperv-setup" -Width 150 -Height 50 -ScreenBufferHeight 8000
+Get-ChildItem -Path "$ROOT\packer\@PS_*.ps1" | ForEach-Object -Process {
+    $name = $( Split-Path $_ -Leaf ).Split(".")[0].Substring(4)
 
-#
-do_step "Create shortcut 'packer\@CP_hyperv-teardown'"
-
-New-Shortcut "$ROOT\packer\@CP_hyperv-teardown" -Admin -TargetPath "C:\Windows\system32\WindowsPowerShell\v1.0\powershell.exe" -Arguments "-ExecutionPolicy Bypass -NoProfile -Command `"$psprofile; $ROOT\packer\@PS_hyperv-teardown.ps1`"; Wait-Key; exit 0"
-Set-ShortcutColors "$ROOT\packer\@CP_hyperv-teardown" -Theme "$ROOT\colors\psconsole-colorized-light-azure.json"
-Set-ShortcutWindowSize "$ROOT\packer\@CP_hyperv-teardown" -Width 150 -Height 50 -ScreenBufferHeight 8000
+    do_echo "@CP_$name"
+    New-Shortcut "$ROOT\packer\@CP_$name" -Admin -TargetPath "C:\Windows\system32\WindowsPowerShell\v1.0\powershell.exe" -Arguments "-ExecutionPolicy Bypass -NoProfile -Command `"$psprofile; $ROOT\packer\@PS_$name.ps1`"; Wait-Key; exit 0"
+    Set-ShortcutColors "$ROOT\packer\@CP_$name" -Theme "$ROOT\colors\psconsole-colorized-light-azure.json"
+    Set-ShortcutWindowSize "$ROOT\packer\@CP_$name" -Width 150 -Height 50 -ScreenBufferHeight 8000
+}
 
 #
 do_exit 0
