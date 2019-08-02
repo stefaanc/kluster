@@ -9,6 +9,8 @@
     "variables": {
         "root": "{{ env `ROOT` }}",
         "packer": "{{ env `PACKER_ROOT` }}",
+        "packer_common_colors": "{{ env `PACKER_COMMON_COLORS` }}",
+        "packer_hyperv_colors": "{{ env `PACKER_HYPERV_COLORS` }}",
 
         "datastore": null,
 
@@ -63,29 +65,74 @@
                 "VM_NAME={{ user `vm_name` }}",
                 "SWITCH_LAN={{ user `switch_lan` }}",
                 "ADAPTER_LAN_MAC=00:00:02:00:01:01",
-                "LOG_DIRECTORY={{ user `packer` }}/logs"
+                "LOG_DIRECTORY={{ user `packer` }}/logs",
+                "STEPS_COLORS={{ user `packer_hyperv_colors` }}"
             ],
             "scripts": [
                 "{{ user `packer` }}/scripts/hyperv/Add-LANAdapter.ps1"
             ]
         },
         {
+            "type": "file",
+            "source": "{{ user `packer` }}/scripts/common/uploads/",
+            "destination": "/tmp/"
+        },
+        {
             "type": "shell",
-            "expect_disconnect": true,
             "environment_vars": [
                 "VM_NAME={{ user `vm_name` }}",
-                "ADAPTER_WAN_DEVICE=eth0",
                 "ADAPTER_LAN_DEVICE=eth1",
                 "ADAPTER_LAN_MAC=00:00:02:00:01:01",
                 "IP_DOMAIN={{ user `ip_domain` }}",
                 "IP_ADDRESS_GATEWAY={{ user `ip_address_gateway` }}",
-                "IP_PREFIX={{ user `ip_prefix` }}"
+                "IP_PREFIX={{ user `ip_prefix` }}",
+                "STEPS_COLORS={{ user `packer_common_colors` }}"
             ],
+            "remote_file": "configure-gateway.bash",
+            "script": "{{ user `packer` }}/scripts/common/configure-gateway.bash"
+        },
+        {
+            "type": "file",
+            "source": "/tmp/configure-gateway.log",
+            "destination": "{{ user `packer` }}/logs/{{ isotime \"20060102T150405.0000Z\" }}_configure-gateway.log",
+            "direction": "download"
+        },
+        {
+            "type": "shell",
+            "expect_disconnect": true,
+            "environment_vars": [
+                "STEPS_COLORS={{ user `packer_common_colors` }}"
+            ],
+            "remote_file": "install-nethserver7.bash",
             "scripts": [
-                "{{ user `packer` }}/scripts/centos7/configure-gateway.bash",
-                "{{ user `packer` }}/scripts/centos7/install-nethserver7.bash",
-                "{{ user `packer` }}/scripts/centos7/configure-nethserver7.bash"
+                "{{ user `packer` }}/scripts/common/install-nethserver7.bash",
+                "{{ user `packer` }}/scripts/common/recover-install-nethserver7.bash"
             ]
+        },
+        {
+            "type": "file",
+            "source": "/tmp/install-nethserver7.log",
+            "destination": "{{ user `packer` }}/logs/{{ isotime \"20060102T150405.0000Z\" }}_install-nethserver7.log",
+            "direction": "download"
+        },
+        {
+            "type": "shell",
+            "environment_vars": [
+                "ADAPTER_WAN_DEVICE=eth0",
+                "ADAPTER_LAN_DEVICE=eth1",
+                "IP_DOMAIN={{ user `ip_domain` }}",
+                "IP_ADDRESS_GATEWAY={{ user `ip_address_gateway` }}",
+                "IP_PREFIX={{ user `ip_prefix` }}",
+                "STEPS_COLORS={{ user `packer_common_colors` }}"
+            ],
+            "remote_file": "configure-nethserver7.bash",
+            "script": "{{ user `packer` }}/scripts/common/configure-nethserver7.bash"
+        },
+        {
+            "type": "file",
+            "source": "/tmp/configure-nethserver7.log",
+            "destination": "{{ user `packer` }}/logs/{{ isotime \"20060102T150405.0000Z\" }}_configure-nethserver7.log",
+            "direction": "download"
         },
         {
             "type": "breakpoint",

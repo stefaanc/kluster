@@ -1,0 +1,49 @@
+{
+    "_copyright_": "Copyright (c) 2019 Stefaan Coussement",
+    "_license_": "MIT",
+    "_repository_": "https://github.com/stefaanc/kluster",
+
+    "_requires_": "hyperv-1-setup.json, hyperv-4-setup.json",
+    "_use_": "packer build -color=false -on-error=ask -timestamp-ui -force -var-file $env:PACKER_ROOT/hyperv-variables.json $env:PACKER_ROOT/x-hyperv-test-bash.json",
+
+    "variables": {
+        "root": "{{ env `ROOT` }}",
+        "packer": "{{ env `PACKER_ROOT` }}",
+        "packer_common_colors": "{{ env `PACKER_COMMON_COLORS` }}",
+        "packer_hyperv_colors": "{{ env `PACKER_HYPERV_COLORS` }}",
+
+        "disable_breakpoint": "true"
+    },
+    "sensitive-variables": [],
+    "builders": [
+        {
+            "type": "null",
+            "ssh_host": "gateway-hyv",
+            "ssh_username": "root",
+            "ssh_password": "rootroot"
+        }
+    ],
+    "provisioners": [
+        {
+            "type": "file",
+            "source": "{{ user `packer` }}/scripts/common/uploads/",
+            "destination": "/tmp/"
+        },
+        {
+            "type": "shell",
+            "environment_vars": [
+                "STEPS_COLORS={{ user `packer_common_colors` }}"
+            ],
+            "remote_file": "x-test-bash.bash",
+            "scripts": [
+                "{{ user `packer` }}/scripts/common/x-test-bash.bash"
+            ]
+        },
+        {
+            "type": "file",
+            "source": "/tmp/x-test-bash.log",
+            "destination": "{{ user `packer` }}/logs/{{ isotime \"20060102T150405.0000Z\" }}_x-test-bash.log",
+            "direction": "download"
+        }
+    ]
+}

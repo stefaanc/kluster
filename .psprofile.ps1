@@ -22,5 +22,18 @@ $env:PACKER_LOG_PATH = "$env:PACKER_ROOT/logs/_packer.log"
 $env:PACKER_LOG = "0"
 
 $e = [char]27
-$env:STEPS_HYPERV_COLORS = "$e[34m,$e[33m,$e[92m,$e[93m,$e[91m,$e[0m"
-#                           normal,bright,green ,yellow,red   ,reset
+if ( ( $HOST.UI.RawUI.ForegroundColor -eq 'DarkYellow' ) -and ( $HOST.UI.RawUI.BackgroundColor -eq 'DarkMagenta' ) ) {
+    # we are working with a legacy Powershell instance
+    $env:PACKER_COMMON_COLORS = "$e[91m,$e[36m,$e[92m,$e[93m,$e[91m,$e[0m"
+    $env:PACKER_ESXI_COLORS   = "$e[37m,$e[36m,$e[92m,$e[93m,$e[91m,$e[0m"
+    $env:PACKER_HYPERV_COLORS = "$e[37m,$e[36m,$e[92m,$e[93m,$e[91m,$e[0m"
+    #                            normal,bright,green ,yellow,red   ,reset
+}
+else {
+    # we are working with a modified Powershell instance
+    # we assume a "Colorized" color-scheme is being used for the console
+    $env:PACKER_COMMON_COLORS = "$e[94m,$e[36m,$e[92m,$e[93m,$e[91m,$e[0m"
+    $env:PACKER_ESXI_COLORS   = "$e[32m,$e[36m,$e[92m,$e[93m,$e[91m,$e[0m"
+    $env:PACKER_HYPERV_COLORS = "$e[34m,$e[36m,$e[92m,$e[93m,$e[91m,$e[0m"
+    #                            normal,bright,green ,yellow,red   ,reset
+}

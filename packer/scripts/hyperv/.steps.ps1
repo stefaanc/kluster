@@ -106,9 +106,9 @@ function do_exec {   # called from 1st 'do_script'
             & "$STEPS_SCRIPT" @STEPS_PARAMS
         }
         else {
-            $path = Split-Path -Path "$STEPS_LOG_FILE"
-            if ( $path -and !$( Test-Path -Path "$path" ) ) {
-                New-Item -ItemType directory -Path "$path" | Out-Null
+            $logpath = Split-Path -Path "$STEPS_LOG_FILE"
+            if ( $logpath -and !$( Test-Path -Path "$logpath" ) ) {
+                New-Item -ItemType directory -Path "$logpath" | Out-Null
             }
 
             if ( !$STEPS_LOG_APPEND ) {
@@ -212,6 +212,12 @@ function do_echo {
 function do_reset {
     # Write-Host "${N}##### do_reset${X}"   # for debugging
     cmd /c "exit 0"   # reset $?, reset $LASTEXITCODE
+    $global:LASTEXITSCRIPT=""
+    $global:LASTEXITCOMMAND=""
+    $global:LASTEXITLINENO=""
+    $global:LASTEXITCHARNO=""
+    $global:LASTEXITMESSAGE=""
+    $global:LASTEXITTRAPPED=""
     $Error.Clear()
 }
 

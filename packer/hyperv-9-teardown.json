@@ -6,7 +6,8 @@
     "_use_": "packer build -color=false -on-error=ask -timestamp-ui -force -var-file $env:PACKER_ROOT/hyperv-variables.json $env:PACKER_ROOT/hyperv-9-teardown.json",
 
     "variables": {
-        "packer": "{{ env `PACKER_ROOT` }}"
+        "packer": "{{ env `PACKER_ROOT` }}",
+        "packer_hyperv_colors": "{{ env `PACKER_HYPERV_COLORS` }}"
     },
     "sensitive-variables": [],
     "builders": [
@@ -23,7 +24,8 @@
             "tempfile_extension": ".ps1",
             "environment_vars": [
                 "LOG_DIRECTORY={{ user `packer` }}/logs",
-                "TEARDOWN_DIRECTORY={{ user `packer` }}"
+                "TEARDOWN_DIRECTORY={{ user `packer` }}",
+                "STEPS_COLORS={{ user `packer_hyperv_colors` }}"
             ],
             "scripts": [
                 "{{ user `packer` }}/scripts/hyperv/Teardown.ps1"

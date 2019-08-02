@@ -20,7 +20,8 @@
 #                "SWITCH_WAN={{ user `switch_wan` }}",
 #                "NETWORK_WAN_NIC"={{ user `network_wan_nic` }}",
 #                "LOG_DIRECTORY={{ user `packer` }}/logs",
-#                "TEARDOWN_SCRIPT={{ user `packer` }}/{{ user `teardown_script` }}"
+#                "TEARDOWN_SCRIPT={{ user `packer` }}/{{ user `teardown_script` }}",
+#                "STEPS_COLORS={{ user `packer_hyperv_colors` }}"
 #            ],
 #            "scripts": [
 #                "{{ user `root` }}/scripts/Setup-WANSwitch.ps1"
@@ -46,9 +47,7 @@ $STEPS_PARAMS = @{
     TEARDOWN_SCRIPT = $TEARDOWN_SCRIPT
 }
 
-$STEPS_COLORS = $env:STEPS_HYPERV_COLORS
-
-$STEPS_LOG_FILE = "$LOG_DIRECTORY\setup_wanswitch_$( Get-Date -Format yyyyMMddTHHmmssffffZ ).log"
+$STEPS_LOG_FILE = "$LOG_DIRECTORY\$( Get-Date -Format yyyyMMddTHHmmss.ffffZ )_setup-wanswitch.log"
 $STEPS_LOG_APPEND = $false
 
 . "$( Split-Path -Path $script:MyInvocation.MyCommand.Path )/.steps.ps1"

@@ -21,7 +21,8 @@
 #                "IP_ADDRESS_HOST={{ user `ip_address_host` }}",
 #                "IP_PREFIX={{ user `ip_prefix` }}",
 #                "LOG_DIRECTORY={{ user `packer` }}/logs",
-#                "TEARDOWN_SCRIPT={{ user `packer` }}/{{ user `teardown_script` }}"
+#                "TEARDOWN_SCRIPT={{ user `packer` }}/{{ user `teardown_script` }}",
+#                "STEPS_COLORS={{ user `packer_hyperv_colors` }}"
 #            ],
 #            "scripts": [
 #                "{{ user `root` }}/scripts/Setup-LANSwitch.ps1"
@@ -50,9 +51,8 @@ $STEPS_PARAMS = @{
     TEARDOWN_SCRIPT = $TEARDOWN_SCRIPT
 }
 
-$STEPS_COLORS = $env:STEPS_HYPERV_COLORS
 
-$STEPS_LOG_FILE = "$LOG_DIRECTORY\setup_lanswitch_$( Get-Date -Format yyyyMMddTHHmmssffffZ ).log"
+$STEPS_LOG_FILE = "$LOG_DIRECTORY\$( Get-Date -Format yyyyMMddTHHmmss.ffffZ )_setup-lanswitch.log"
 $STEPS_LOG_APPEND = $false
 
 . "$( Split-Path -Path $script:MyInvocation.MyCommand.Path )/.steps.ps1"
@@ -97,7 +97,7 @@ While ( ( Get-NetConnectionProfile -InterfaceAlias "vEthernet ($SWITCH_LAN)").Ne
         # We observed that this sometimes fails because the network is marked "Identifying",
         # but it succeeds after some time
         if ( $Error[0].Exception.Message -like "*'Identifying...'*" ) {
-            do_echo "Please wait for network identification to complete..."
+            do_echo "Waiting for network identification to complete..."
             Start-Sleep 5
         }
         else {

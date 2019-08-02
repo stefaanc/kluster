@@ -14,7 +14,8 @@
 #            "tempfile_extension": ".ps1",
 #            "environment_vars": [
 #                "LOG_DIRECTORY={{ user `packer` }}/logs",
-#                "TEARDOWN_DIRECTORY={{ user `packer` }}"
+#                "TEARDOWN_DIRECTORY={{ user `packer` }}",
+#                "STEPS_COLORS={{ user `packer_hyperv_colors` }}"
 #            "scripts": [
 #                "{{ user `packer` }}/scripts/hyperv/Teardown.ps1"
 #        }
@@ -33,9 +34,7 @@ $STEPS_PARAMS = @{
     TEARDOWN_DIRECTORY = $TEARDOWN_DIRECTORY
 }
 
-$STEPS_COLORS = $env:STEPS_HYPERV_COLORS
-
-$STEPS_LOG_FILE = "$LOG_DIRECTORY\teardown_$( Get-Date -Format yyyyMMddTHHmmssffffZ ).log"
+$STEPS_LOG_FILE = "$LOG_DIRECTORY\$( Get-Date -Format yyyyMMddTHHmmss.ffffZ )_teardown.log"
 $STEPS_LOG_APPEND = $false
 
 . "$( Split-Path -Path $script:MyInvocation.MyCommand.Path )/.steps.ps1"

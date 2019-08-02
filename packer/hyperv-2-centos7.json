@@ -9,6 +9,7 @@
     "variables": {
         "root": "{{ env `ROOT` }}",
         "packer": "{{ env `PACKER_ROOT` }}",
+        "packer_common_colors": "{{ env `PACKER_COMMON_COLORS` }}",
 
         "datastore": null,
 
@@ -80,11 +81,29 @@
     ],
     "provisioners": [
         {
+            "type": "file",
+            "source": "/var/log/anaconda/anaconda.log",
+            "destination": "{{ user `packer` }}/logs/{{ isotime \"20060102T150405.0000Z\" }}_install-centos7.log",
+            "direction": "download"
+        },
+        {
+            "type": "file",
+            "source": "{{ user `packer` }}/scripts/common/uploads/",
+            "destination": "/tmp/"
+        },
+        {
             "type": "shell",
-            "environment_vars": [],
-            "scripts": [
-                "{{ user `packer` }}/scripts/centos7/configure-centos7.bash"
-            ]
+            "environment_vars": [
+                "STEPS_COLORS={{ user `packer_common_colors` }}"
+            ],
+            "remote_file": "configure-centos7.bash",
+            "script": "{{ user `packer` }}/scripts/common/configure-centos7.bash"
+        },
+        {
+            "type": "file",
+            "source": "/tmp/configure-centos7.log",
+            "destination": "{{ user `packer` }}/logs/{{ isotime \"20060102T150405.0000Z\" }}_configure-centos7.log",
+            "direction": "download"
         },
         {
             "type": "breakpoint",

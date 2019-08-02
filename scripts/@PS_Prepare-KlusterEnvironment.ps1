@@ -4,7 +4,7 @@
 #
 # more info: https://github.com/stefaanc/kluster
 #
-$STEPS_LOG_FILE = "$ROOT\logs\prepare-klusterenvironment_$( Get-Date -Format yyyyMMddTHHmmssffffZ ).log"
+$STEPS_LOG_FILE = "$ROOT\logs\prepare-klusterenvironment_$( Get-Date -Format yyyyMMddTHHmmss.ffffZ ).log"
 $STEPS_LOG_APPEND = $false
 
 . "$(Split-Path -Path $script:MyInvocation.MyCommand.Path)/.steps.ps1"

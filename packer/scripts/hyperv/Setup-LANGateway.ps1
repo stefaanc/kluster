@@ -22,7 +22,8 @@
 #                "VM_NAME={{ user `vm_name` }}",
 #                "IP_ADDRESS_LAN={{ user `ip_address_lan` }}",
 #                "LOG_DIRECTORY={{ user `packer` }}/logs",
-#                "TEARDOWN_SCRIPT={{ user `packer` }}/{{ user `teardown_script` }}"
+#                "TEARDOWN_SCRIPT={{ user `packer` }}/{{ user `teardown_script` }}",
+#                "STEPS_COLORS={{ user `packer_hyperv_colors` }}"
 #            ],
 #            "scripts": [
 #                "{{ user `root` }}/scripts/Setup-LANGateway.ps1"
@@ -54,9 +55,7 @@ $STEPS_PARAMS = @{
     TEARDOWN_SCRIPT = $TEARDOWN_SCRIPT
 }
 
-$STEPS_COLORS = $env:STEPS_HYPERV_COLORS
-
-$STEPS_LOG_FILE = "$LOG_DIRECTORY\setup_langateway_$( Get-Date -Format yyyyMMddTHHmmssffffZ ).log"
+$STEPS_LOG_FILE = "$LOG_DIRECTORY\$( Get-Date -Format yyyyMMddTHHmmss.ffffZ )_setup-langateway.log"
 $STEPS_LOG_APPEND = $false
 
 . "$( Split-Path -Path $script:MyInvocation.MyCommand.Path )/.steps.ps1"
@@ -114,7 +113,7 @@ do_step "Wait for VM `"$VM_NAME`" to become reachable"
 
 do {
     sleep 5
-    do_echo "Please wait for the VM to become reachable..."
+    do_echo "Waiting for the VM to become reachable..."
     ping $IP_ADDRESS_LAN
 } until ( "$LASTEXITCODE" -eq "0" )
 

@@ -9,6 +9,7 @@
     "variables": {
         "root": "{{ env `ROOT` }}",
         "packer": "{{ env `PACKER_ROOT` }}",
+        "packer_hyperv_colors": "{{ env `PACKER_HYPERV_COLORS` }}",
 
         "switch_wan": null,
         "network_wan_nic": null,
@@ -40,7 +41,8 @@
                 "IP_ADDRESS_HOST={{ user `ip_address_host` }}",
                 "IP_PREFIX={{ user `ip_prefix` }}",
                 "LOG_DIRECTORY={{ user `packer` }}/logs",
-                "TEARDOWN_SCRIPT={{ user `packer` }}/{{ user `teardown_script` }}"
+                "TEARDOWN_SCRIPT={{ user `packer` }}/{{ user `teardown_script` }}",
+                "STEPS_COLORS={{ user `packer_hyperv_colors` }}"
             ],
             "scripts": [
                 "{{ user `packer` }}/scripts/hyperv/Setup-WANSwitch.ps1",

@@ -10,6 +10,7 @@
     "variables": {
         "root": "{{ env `ROOT` }}",
         "packer": "{{ env `PACKER_ROOT` }}",
+        "packer_hyperv_colors": "{{ env `PACKER_HYPERV_COLORS` }}",
 
         "datastore": null,
 
@@ -39,7 +40,8 @@
                 "VM_NAME={{ user `vm_name` }}",
                 "IP_ADDRESS_LAN={{ user `ip_address_lan` }}",
                 "LOG_DIRECTORY={{ user `packer` }}/logs",
-                "TEARDOWN_SCRIPT={{ user `packer` }}/{{ user `teardown_script` }}"
+                "TEARDOWN_SCRIPT={{ user `packer` }}/{{ user `teardown_script` }}",
+                "STEPS_COLORS={{ user `packer_hyperv_colors` }}"
             ],
             "scripts": [
                 "{{ user `packer` }}/scripts/hyperv/Setup-LANGateway.ps1"

@@ -16,7 +16,8 @@
 #                "VM_NAME={{ user `vm_name` }}",
 #                "SWITCH_LAN={{ user `switch_lan` }}",
 #                "ADAPTER_LAN_MAC=00:00:02:00:01:01",
-#                "LOG_DIRECTORY={{ user `packer` }}/logs"
+#                "LOG_DIRECTORY={{ user `packer` }}/logs",
+#                "STEPS_COLORS={{ user `packer_hyperv_colors` }}"
 #            ],
 #            "scripts": [
 #                "{{ user `packer` }}/scripts/hyperv/Add-LANAdapter.ps1"
@@ -40,9 +41,7 @@ $STEPS_PARAMS = @{
     LOG_DIRECTORY = $LOG_DIRECTORY
 }
 
-$STEPS_COLORS = $env:STEPS_HYPERV_COLORS
-
-$STEPS_LOG_FILE = "$LOG_DIRECTORY\add_lanadapter_$( Get-Date -Format yyyyMMddTHHmmssffffZ ).log"
+$STEPS_LOG_FILE = "$LOG_DIRECTORY\$( Get-Date -Format yyyyMMddTHHmmss.ffffZ )_add-lanadapter.log"
 $STEPS_LOG_APPEND = $false
 
 . "$( Split-Path -Path $script:MyInvocation.MyCommand.Path )/.steps.ps1"
