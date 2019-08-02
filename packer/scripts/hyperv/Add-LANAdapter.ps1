@@ -33,14 +33,6 @@ param(
 )
 if ( "$LOG_DIRECTORY" -eq "" ) { $LOG_DIRECTORY = "$PACKER_ROOT\logs" }
 
-# save params for second '.steps' pass
-$STEPS_PARAMS = @{
-    VM_NAME = $VM_NAME
-    SWITCH_LAN = $SWITCH_LAN
-    ADAPTER_LAN_MAC = $ADAPTER_LAN_MAC
-    LOG_DIRECTORY = $LOG_DIRECTORY
-}
-
 $STEPS_LOG_FILE = "$LOG_DIRECTORY\$( Get-Date -Format yyyyMMddTHHmmss.ffffZ )_add-lanadapter.log"
 $STEPS_LOG_APPEND = $false
 

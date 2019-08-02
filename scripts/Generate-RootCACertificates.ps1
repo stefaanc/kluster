@@ -13,11 +13,6 @@ param(
 )
 if ( "$IP_DOMAIN" -eq "" ) { $IP_DOMAIN = "kluster.local" }
 
-# save params for second '.steps' pass
-$STEPS_PARAMS = @{
-    IP_DOMAIN = $IP_DOMAIN
-}
-
 $STEPS_LOG_FILE = "$ROOT\logs\generate-rootcacertificates_$( Get-Date -Format yyyyMMddTHHmmss.ffffZ ).log"
 $STEPS_LOG_APPEND = $false
 

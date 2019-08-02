@@ -16,13 +16,6 @@ param(
 if ( "$SERVER_NAME" -eq "" ) { $SERVER_NAME = "esxiserver" }
 if ( "$IP_DOMAIN" -eq "" ) { $IP_DOMAIN = "kluster.local" }
 
-# save params for second '.steps' pass
-$STEPS_PARAMS = @{
-    IP_DOMAIN = $IP_DOMAIN
-    IP_ADDRESS = $IP_ADDRESS
-    SERVER_NAME = $SERVER_NAME
-}
-
 $STEPS_LOG_FILE = "$ROOT\logs\generate-esxiservercertificates_$( Get-Date -Format yyyyMMddTHHmmss.ffffZ ).log"
 $STEPS_LOG_APPEND = $false
 

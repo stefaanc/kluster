@@ -72,7 +72,7 @@ yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarc
 #
 do_step "Update/upgrade installed packages"
 
-do_echo "The installation will take a while."
+do_echo "The update/upgrade will take a while."
 yum -y install deltarpm
 yum -y update && yum -y upgrade &
 PID=$!

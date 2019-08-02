@@ -28,12 +28,6 @@ param(
 if ( "$LOG_DIRECTORY" -eq "" ) { $LOG_DIRECTORY = "$PACKER_ROOT\logs" }
 if ( "$TEARDOWN_DIRECTORY" -eq "" ) { $TEARDOWN_DIRECTORY = "$PACKER_ROOT" }
 
-# save params for second '.steps' pass
-$STEPS_PARAMS = @{
-    LOG_DIRECTORY = $LOG_DIRECTORY
-    TEARDOWN_DIRECTORY = $TEARDOWN_DIRECTORY
-}
-
 $STEPS_LOG_FILE = "$LOG_DIRECTORY\$( Get-Date -Format yyyyMMddTHHmmss.ffffZ )_teardown.log"
 $STEPS_LOG_APPEND = $false
 

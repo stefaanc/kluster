@@ -45,16 +45,6 @@ if ( "$VM_NAME" -eq "" ) { $VM_NAME = "gateway-hyv" }
 if ( "$IP_ADDRESS_LAN" -eq "" ) { $IP_ADDRESS = "192.168.2.17" }
 if ( "$LOG_DIRECTORY" -eq "" ) { $LOG_DIRECTORY = "$ROOT\logs" }
 
-# save params for second '.steps' pass
-$STEPS_PARAMS = @{
-    TEMPLATE_DIRECTORY = $TEMPLATE_DIRECTORY
-    VM_ROOT = $VM_ROOT
-    VM_NAME = $VM_NAME
-    IP_ADDRESS_LAN = $IP_ADDRESS_LAN
-    LOG_DIRECTORY = $LOG_DIRECTORY
-    TEARDOWN_SCRIPT = $TEARDOWN_SCRIPT
-}
-
 $STEPS_LOG_FILE = "$LOG_DIRECTORY\$( Get-Date -Format yyyyMMddTHHmmss.ffffZ )_setup-langateway.log"
 $STEPS_LOG_APPEND = $false
 

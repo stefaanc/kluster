@@ -42,16 +42,6 @@ if ( "$IP_ADDRESS_HOST" -eq "" ) { $IP_ADDRESS_HOST = "192.168.0.254" }
 if ( "$IP_PREFIX" -eq "" ) { $IP_PREFIX = "24" }
 if ( "$LOG_DIRECTORY" -eq "" ) { $LOG_DIRECTORY = "$ROOT\logs" }
 
-# save params for second '.steps' pass
-$STEPS_PARAMS = @{
-    SWITCH_LAN = $SWITCH_LAN
-    IP_ADDRESS_HOST = $IP_ADDRESS_HOST
-    IP_PREFIX = $IP_PREFIX
-    LOG_DIRECTORY = $LOG_DIRECTORY
-    TEARDOWN_SCRIPT = $TEARDOWN_SCRIPT
-}
-
-
 $STEPS_LOG_FILE = "$LOG_DIRECTORY\$( Get-Date -Format yyyyMMddTHHmmss.ffffZ )_setup-lanswitch.log"
 $STEPS_LOG_APPEND = $false
 

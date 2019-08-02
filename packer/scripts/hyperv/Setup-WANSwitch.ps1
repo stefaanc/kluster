@@ -39,14 +39,6 @@ if ( "$SWITCH_WAN" -eq "" ) { $SWITCH_WAN = "Virtual Switch External" }
 if ( "$NETWORK_WAN_NIC" -eq "" ) { $NETWORK_WAN_NIC = ( Get-NetAdapterHardwareInfo )[0].InterfaceDescription }
 if ( "$LOG_DIRECTORY" -eq "" ) { $LOG_DIRECTORY = "$ROOT\logs" }
 
-# save params for second '.steps' pass
-$STEPS_PARAMS = @{
-    SWITCH_WAN = $SWITCH_WAN
-    NETWORK_WAN_NIC = $NETWORK_WAN_NIC
-    LOG_DIRECTORY = $LOG_DIRECTORY
-    TEARDOWN_SCRIPT = $TEARDOWN_SCRIPT
-}
-
 $STEPS_LOG_FILE = "$LOG_DIRECTORY\$( Get-Date -Format yyyyMMddTHHmmss.ffffZ )_setup-wanswitch.log"
 $STEPS_LOG_APPEND = $false
 

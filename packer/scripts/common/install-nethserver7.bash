@@ -75,7 +75,7 @@ if [[ "$( virt-what )" = "hyperv" ]] ; then
     exec 111> /tmp/recover_111.txt
     ### reference: https://community.nethserver.org/t/issues-with-7-6-and-hyperv-16/11502/30
     # wait 1 second to finish the script, then reboot to recover 'eth0'
-    sleep 1 && shutdown -r now &
+    do_cleanup 'sleep 1 && shutdown -r now &'
 fi
 wait $PID   # trigger trap if exitcode not 0
 

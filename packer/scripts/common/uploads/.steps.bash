@@ -8,7 +8,76 @@
 
 set -eu -o pipefail -o errtrace
 
+trap 'do_exit 99999 $? "$LINENO"' ERR
+trap 'do_trap' EXIT
+
 . "$( dirname ${BASH_SOURCE[0]} )/.globals.bash"
+
+declare -A VTForegroundColors=(
+    ["Black"]="30"
+    ["DarkBlue"]="34"
+    ["DarkGreen"]="32"
+    ["DarkCyan"]="36"
+    ["DarkRed"]="31"
+    ["DarkMagenta"]="35"
+    ["DarkYellow"]="33"
+    ["Gray"]="37"
+    ["DarkGray"]="90"
+    ["Blue"]="94"
+    ["Green"]="92"
+    ["Cyan"]="96"
+    ["Red"]="91"
+    ["Magenta"]="95"
+    ["Yellow"]="93"
+    ["White"]="97"
+)
+declare -A VTBackgroundColors=(
+    ["Black"]="40"
+    ["DarkBlue"]="44"
+    ["DarkGreen"]="42"
+    ["DarkCyan"]="46"
+    ["DarkRed"]="41"
+    ["DarkMagenta"]="45"
+    ["DarkYellow"]="43"
+    ["Gray"]="47"
+    ["DarkGray"]="100"
+    ["Blue"]="104"
+    ["Green"]="102"
+    ["Cyan"]="106"
+    ["Red"]="101"
+    ["Magenta"]="105"
+    ["Yellow"]="103"
+    ["White"]="107"
+)
+
+ConvertColorToEsc () {
+    local foregroundcolor=$( echo -e "$1" )
+    if [[ $# -gt 1 ]] ; then
+        local backgroundcolor=$( echo -e "$2" )
+    else
+        local backgroundcolor=""
+    fi
+
+    local f=${foregroundcolor:0:1}
+    if [[ "$f" = $'\e' ]] ; then
+        local c="$foregroundcolor"
+    elif [[ "$f" = "#" ]] ; then
+        local red=$(( 16#$( echo "${foregroundcolor:1:2}" | tr a-z A-Z ) ))
+        local green=$(( 16#$( echo "${foregroundcolor:3:2}" | tr a-z A-Z ) ))
+        local blue=$(( 16#$( echo "${foregroundcolor:5:2}" | tr a-z A-Z ) ))
+        local c="\e[38;2;${red};${green};${blue}m"
+    else
+        local c="\e[${VTForegroundColors[$foregroundcolor]}"
+        if [[ "$backgroundcolor" != "" ]] ; then
+            local c="${c};${VTBackgroundColors[$backgroundcolor]}"
+        fi
+        local c="${c}m"
+    fi
+
+    echo "$c"
+}
+
+STEPS_CLEANUP=""
 
 set +u   # disable checking for undefined vars
 export STEPS_COLORS="$STEPS_COLORS"
@@ -20,8 +89,12 @@ else
     OLDIFS=$IFS; IFS=',' 
     read -ra colors <<< "$STEPS_COLORS"
     IFS=$OLDIFS
-    export N=${colors[0]}; export B=${colors[1]}; export G=${colors[2]}; export Y=${colors[3]}; export R=${colors[4]}; export X=${colors[5]};
-    #        normal    ;            bright    ;            green     ;            yellow    ;            red       ;            reset
+    export N=$( ConvertColorToEsc ${colors[0]} )
+    export B=$( ConvertColorToEsc ${colors[1]} )
+    export G=$( ConvertColorToEsc ${colors[2]} )
+    export Y=$( ConvertColorToEsc ${colors[3]} )
+    export R=$( ConvertColorToEsc ${colors[4]} )
+    export X="\e[0m"
 fi
 
 set +u   # disable checking for undefined vars
@@ -134,6 +207,36 @@ do_step () {
     fi
 }
 
+do_echo () {
+    local message=${@:-$(</dev/stdin)}
+    #echo '##### do_echo' #>&111     # for debugging
+
+    local foregroundcolor=${B}
+    local backgroundcolor=""
+    if [[ $# -gt 1 ]] ; then
+        while [[ $1 ]] ; do
+            case "$1" in
+                -c | --color | --foregroundcolor)
+                    local foregroundcolor=$2; shift ;;
+                --backgroundcolor)
+                    local backgroundcolor=$2; shift ;;
+                *)
+                    local message=$@; break ;;
+            esac
+            shift
+        done
+    fi
+
+    local color=$( ConvertColorToEsc $foregroundcolor $backgroundcolor )
+
+    OLDIFS=$IFS; IFS=$'\n'
+    while read -r line ; do
+        echo -e "${color}${STEPS_INDENT}.   $line${X}" >&111
+        echo "# $line"
+    done <<< "$message"
+    IFS=$OLDIFS
+}
+
 do_reset () {
     #echo '##### do_reset' #>&111     # for debugging
     global LASTEXITCODE=0
@@ -144,22 +247,15 @@ do_reset () {
     global LASTEXITTRAPPED=""
 }
 
-do_echo () {
-    message=${1:-$(</dev/stdin)}
-    #echo '##### do_echo' #>&111     # for debugging
-
-    OLDIFS=$IFS; IFS=$'\n'
-    while read -r line ; do
-        echo -e "${B}${STEPS_INDENT}.   $line${X}" >&111
-        echo "# $line"
-    done <<< "$message"
-    IFS=$OLDIFS
+do_cleanup () {
+    #echo '##### do_cleanup' #>&111     # for debugging
+    STEPS_CLEANUP=$1
 }
 
 do_exit () {
     local exitcode=$1
     local command="$BASH_COMMAND"   # capture command here so not overwritten by the code in this function
-    #echo '##### do_exit' #>&111     # for debugging
+    #echo '##### do_exit' >&111     # for debugging
 
     if [[ $exitcode != 99999 ]] ; then 
         # called directly
@@ -168,8 +264,13 @@ do_exit () {
         local lineno="${BASH_LINENO[1]}"   # this always will be '0' when trapped in 'main'
         if [[ $lineno = "0" ]] ; then local lineno="--" ; fi
         global LASTEXITLINENO=$lineno
-        global LASTEXITCOMMAND="do_exit $exitcode"
-        global LASTEXITMESSAGE="exited with exitcode $exitcode"
+        if [[ ( $# -gt 1 ) && ( "$2" != "" ) ]] ; then
+            global LASTEXITCOMMAND="do_exit $exitcode \"$2\""
+            global LASTEXITMESSAGE="$2"
+        else
+            global LASTEXITCOMMAND="do_exit $exitcode"
+            global LASTEXITMESSAGE="exited with exitcode $exitcode"
+        fi
     elif [[ "$( tail -n 1 "./_stderr.log" 2>/bin/null | grep ': line [0-9]*: ' )" != "" ]] ; then 
         # called via ERR trap, with error-message
         #echo '##### 2' #>&111     # for debugging
@@ -214,7 +315,7 @@ do_exit () {
 do_trap () {
     local exitcode=$?
     local command="$BASH_COMMAND"   # capture command here so not overwritten by the code in this function
-    #echo '##### do_trap' #>&111     # for debugging
+    #echo '##### do_trap' >&111     # for debugging
 
     if [[ "$LASTEXITTRAPPED" = "" ]] ; then
         if [[ "$LASTEXITLINENO" != "" ]] ; then 
@@ -237,6 +338,10 @@ do_trap () {
             if [[ "$lineno" = "0" ]] ; then local lineno="--" ; fi
             global LASTEXITLINENO=$lineno
             global LASTEXITMESSAGE="exited with exitcode $exitcode"
+        fi
+
+        if [[ "$STEPS_CLEANUP" != "" ]] ; then
+            eval "$STEPS_CLEANUP"
         fi
 
         if [[ $exitcode = 0 ]] ; then
@@ -264,6 +369,10 @@ do_trap () {
         rm -f "./_stderr.log" # cleanup 'tee'd file
 
         global LASTEXITCODE=$exitcode
+    else
+        if [[ "$STEPS_CLEANUP" != "" ]] ; then
+            eval "$STEPS_CLEANUP"
+        fi
     fi
 
     #echo "##### [[ \$LASTEXITCODE = $LASTEXITCODE ]]" #>&111     # for debugging
@@ -275,6 +384,3 @@ do_trap () {
 
     exit $exitcode
 }
-
-trap 'do_exit 99999 $? "$LINENO"' ERR
-trap 'do_trap' EXIT
