@@ -19,40 +19,16 @@ This is a project that is continuously updated and possibly changing direction, 
 
 ## Before You Start
 
-### Setup your profile for PowerShell
+### Setup the PowerShell environment
 
 1. by default, the "kluster" project is expected to be in the `~\Projects\kluster` folder.  
 
    - if you put it somewhere else, for instance `~\xyz\kluster`, edit the `~\xyz\kluster\.psprofile.ps1` file
      - change the `$ROOT = "$HOME\Projects\kluster"` line to `$ROOT = "$HOME\xyz\kluster"`
 
+2. the "kluster" project is expecting PowerShell to be properly setup.
 
-2. navigate to your `~\Documents\WindowsPowerShell` folder
-
-   - if there is no `profile.ps1` file
-     - copy the `~\Projects\kluster\downloads\profile.ps` file  
-
-   - if there is a `profile.ps1` file
-     - either add (some of) the content of `~\Project\kluster\downloads\profile.ps` to the original file
-     - or rename the original file and copy the `~\Projects\kluster\downloads\profile.ps` file  
-
-   - if you are using a different root folder for the "kluster" project (see 1.), edit the `~\Documents\WindowsPowerShell\profile.ps1` file
-     - change the `. ~\Projects\.psprofile.ps1` line to `. ~\xyz\.psprofile.ps1` or `. ~\xyz\kluster\.psprofile.ps1` any other profile that you want to use as default.
-
-   > :information_source:  
-   > We are using the profile and PowerShell console setup from the https://github.com/stefaanc/psconsole project here.  Have a look if you want to understand better how this works.
-
-
-3. open a PowerShell terminal
-
-   - if you get a warning that you cannot execute scripts
-     - either execute `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned`
-     - or run `@@CP_Start-PowerShell.bat` in your `$ROOT\scripts` folder to open a PowerShell terminal
-
-
-4. verify that executing `echo $env:USERPROFILE` gives you your home-directory
-
-   - we have seen this go wrong, but the remedy depends on your environment.  It is important that this gets sorted before you continue.
+   - [setup the PowerShell profiles](./docs/setup-powershell.md)
 
 
 ### Generate root-certificates for the kluster domain
@@ -87,10 +63,10 @@ This is a project that is continuously updated and possibly changing direction, 
 
 3. download the vSphere Hypervisor and install it
 
-4. [configure ESXi server](./documents/configure-esxi-server.md)
+4. [configure ESXi server](./docs/configure-esxi-server.md)
 
 
 ### Prepare the kluster environment
 
-1. navigate to your `$ROOT\scripts` folder and run `@@CP_Prepare-KlusterEnvironment.bat`
+1. navigate to your `$ROOT\scripts` folder and run `@CP_Prepare-KlusterEnvironment.bat`
 

@@ -42,11 +42,11 @@
 
 1. open a PowerShell terminal
 
-2. execute `Generate-ESXiServerCertificates.ps1 $IP_ADDRESS $SERVER_NAME $IP_DOMAIN`,
+2. execute `Generate-ServerCertificatesESXi.ps1 $IP_ADDRESS $SERVER_NAME $IP_DOMAIN`,
    for instance
 
    ```powershell
-   Generate-ESXiServerCertificates.ps1 "192.168.0.3" "esxiserver" "kluster.local"
+   Generate-ServerCertificatesESXi.ps1 "192.168.0.3" "esxiserver" "kluster.local"
    ```
 
   - the script will silently import an intermediate-CA certificate for the ESXi server.
