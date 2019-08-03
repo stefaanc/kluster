@@ -6,17 +6,15 @@
 #
 # use:
 #
-#    Generate-ESXIServerCertificates "$IP_ADDRESS" [ "$SERVER_NAME" [ "$IP_DOMAIN" ]]
+#    Generate-ServerCertificates "$IP_ADDRESS" "$SERVER_NAME" [ "$IP_DOMAIN" ]
 #
 param(
-    [parameter(mandatory, position=0)] $IP_ADDRESS = "$env:IP_ADDRESS",
-    [parameter(position=1)] $SERVER_NAME = "$env:SERVER_NAME",
-    [parameter(position=2)] $IP_DOMAIN = "$env:IP_DOMAIN"
+    [string]$IP_ADDRESS = "$env:IP_ADDRESS",
+    [string]$SERVER_NAME = "$env:SERVER_NAME",
+    [string]$IP_DOMAIN = "$env:IP_DOMAIN"
 )
-if ( "$SERVER_NAME" -eq "" ) { $SERVER_NAME = "esxiserver" }
-if ( "$IP_DOMAIN" -eq "" ) { $IP_DOMAIN = "kluster.local" }
 
-$STEPS_LOG_FILE = "$ROOT\logs\generate-esxiservercertificates_$( Get-Date -Format yyyyMMddTHHmmss.ffffZ ).log"
+$STEPS_LOG_FILE = "$ROOT\logs\generate-servercertificatesesxi_$( Get-Date -Format yyyyMMddTHHmmss.ffffZ ).log"
 $STEPS_LOG_APPEND = $false
 
 . "$( Split-Path -Path $script:MyInvocation.MyCommand.Path )/.steps.ps1"
@@ -24,8 +22,15 @@ trap { do_trap }
 
 do_script
 
+if ( "$IP_ADDRESS" -eq "" ) { throw "Cannot execute script: no IP address specified" }
+if ( "$SERVER_NAME" -eq "" ) { throw "Cannot execute script: no server name specified" }
+if ( "$IP_DOMAIN" -eq "" ) { $IP_DOMAIN = "kluster.local" }
+
 #
 # workaround for issue with openssl finding the .rnd file
+Push-Location
+do_cleanup 'Pop-Location'
+
 Set-Location "$HOME"
 
 #
@@ -38,11 +43,11 @@ if ( -not ( Test-Path -Path "$PATH" ) ) {
 }
 
 #
-do_step "Check/create rootCA certificates"
+do_step "Generate rootCA certificates if they don't exist"
 
 $CA_PATH="$ROOT/.pki/$IP_DOMAIN"
 if ( -not ( Test-Path -Path "$CA_PATH" ) ) {
-    Generate-RootCACertificates "$IP_DOMAIN"
+    & Generate-RootCACertificates "$IP_DOMAIN"
 }
 
 #
@@ -107,7 +112,7 @@ $ErrorActionPreference = 'Stop'
 do_step "Generate a certificate for 'server@$SERVER_DOMAIN'"
 
 New-Item -Type File -Path "$PATH" -Name server.ext -Force -Value @"
-basicConstraints       = critical,CA:FALSE
+basicConstraints       = critical,CA:false
 subjectKeyIdentifier   = hash
 authorityKeyIdentifier = keyid:always,issuer:always
 keyUsage               = critical,digitalSignature,keyEncipherment
@@ -119,23 +124,6 @@ $ErrorActionPreference = 'Continue'
 openssl x509 -req -in "$PATH/server.csr" -CA "$PATH/ca@$SERVER_DOMAIN.crt" -CAkey "$PATH/ca@$SERVER_DOMAIN.key" -days 3652 -extfile "$PATH/server.ext" -CAcreateserial -out "$PATH/server@$SERVER_DOMAIN.crt"; do_catch_exit -IgnoreExitStatus
 $ErrorActionPreference = 'Stop'
 Remove-Item -Force "$PATH/server.csr"
-
-#
-do_step "Prepare certificates for ESXi server"
-
-( Get-Content -Raw "$PATH/server@$SERVER_DOMAIN.key" ).Replace("`r`n", "`n") | Set-Content -NoNewLine "$PATH/rui.key"
-( Get-Content -Raw "$PATH/server@$SERVER_DOMAIN.crt" ).Replace("`r`n", "`n") | Set-Content -NoNewLine "$PATH/rui.crt"
-
-do_echo ""
-do_echo "To install certs on ESXi server:"
-do_echo "- put ESXi server in maintenance mode (esxcli system maintenanceMode set --enable true)"
-do_echo "- using winscp, rename old rui.key and rui.crt in /etc/vmware/ssl/ to rui.key.bak and rui.crt.bak"
-do_echo "- using winscp, upload new rui.key and rui.crt to /etc/vmware/ssl/"
-do_echo "- put ESXi server out of maintenance mode (esxcli system maintenanceMode set --enable false)"
-do_echo "- reboot ESXi server"
-do_echo ""
-
-Set-Location "$PATH"
 
 #
 do_exit 0

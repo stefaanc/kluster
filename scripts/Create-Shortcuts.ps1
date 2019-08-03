@@ -66,5 +66,7 @@ Get-ChildItem -Path "$ROOT\packer\@PS_*.ps1" | ForEach-Object -Process {
     Set-ShortcutWindowSize "$ROOT\packer\@CP_$name" -Width 150 -Height 50 -ScreenBufferHeight 8000
 }
 
+Copy-Item -Force "$ROOT\packer\@CP_hyperv-build.lnk" "$ROOT\scripts\@CP_Build-TemplatesHyperV"
+
 #
 do_exit 0

@@ -9,9 +9,8 @@
 #    Generate-RootCACertificates [ "$IP_DOMAIN" ]
 #
 param(
-    [parameter(position=0)] $IP_DOMAIN = "$env:IP_DOMAIN"
+    [string]$IP_DOMAIN = "$env:IP_DOMAIN"
 )
-if ( "$IP_DOMAIN" -eq "" ) { $IP_DOMAIN = "kluster.local" }
 
 $STEPS_LOG_FILE = "$ROOT\logs\generate-rootcacertificates_$( Get-Date -Format yyyyMMddTHHmmss.ffffZ ).log"
 $STEPS_LOG_APPEND = $false
@@ -21,9 +20,13 @@ trap { do_trap }
 
 do_script
 
+if ( "$IP_DOMAIN" -eq "" ) { $IP_DOMAIN = "kluster.local" }
+
 #
 # workaround for issue with openssl finding the .rnd file
-$SAVED_LOCATION = ( Get-Location ).Path
+Push-Location
+do_cleanup 'Pop-Location'
+
 Set-Location "$HOME"
 
 #
@@ -67,12 +70,12 @@ $ErrorActionPreference = 'Stop'
 Remove-Item -Force "$PATH\ca.csr"
 
 #
-do_step "Generate a certificate for 'ca@$IP_DOMAIN' in the browser"
+do_step "Generate a browser-certificate for 'ca@$IP_DOMAIN'"
 
 openssl pkcs12 -export -cacerts -passout pass:klusklus -in "$PATH\ca@$IP_DOMAIN.crt" -inkey "$PATH\ca@$IP_DOMAIN.key" -name "ca@$IP_DOMAIN" -out "$PATH\ca@$IP_DOMAIN.p12"; do_catch_exit
 
 #
-do_step "Delete old certificate for 'ca@$IP_DOMAIN' in the browser"
+do_step "Delete old browser-certificate for 'ca@$IP_DOMAIN'"
 
 $Certs = Get-ChildItem Cert:"CurrentUser\AuthRoot" | Where-Object { $_.Subject -match "$IP_DOMAIN" }
 if ( "$Certs" ) {
@@ -83,15 +86,11 @@ if ( "$Certs" ) {
 Get-ChildItem Cert:"CurrentUser\Root" | Where-Object { $_.Subject -match "$IP_DOMAIN" } | Remove-Item
 
 #
-do_step "Import new certificate for 'ca@$IP_DOMAIN' in the browser"
+do_step "Import new browser-certificate for 'ca@$IP_DOMAIN'"
 
 CertUtil -f -user -p klusklus -importPFX AuthRoot "$PATH\ca@$IP_DOMAIN.p12"
 $Certs = Get-ChildItem Cert:"CurrentUser\AuthRoot" | Where-Object { $_.Subject -match "$IP_DOMAIN" }
 $Certs | Format-Table FriendlyName, Subject | Out-String | do_echo
-
-#
-# workaround for issue with openssl finding the .rnd file
-Set-Location "$SAVED_LOCATION"
 
 #
 do_exit 0
