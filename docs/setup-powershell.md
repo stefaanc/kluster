@@ -27,7 +27,7 @@
 5. open a PowerShell terminal
 
    - if you get a warning that you cannot execute scripts, execute `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned`
-   - alternatively, you can also use the `@CP_Start-PowerShellUser` or `@CP_Start-PowerShellAdmin` shortcuts that are created in the `~\Projects\kluster\scripts` folder after [preparing the kluster environment](/readme.md#prepare-the-kluster-environment).
+   - alternatively, you can also use the `@CP_Start-PowerShellUser` or `@CP_Start-PowerShellAdmin` shortcuts that are created in the `~\Projects\kluster\scripts` folder after [preparing the kluster environment](readme.md#prepare-the-kluster-environment).
 
 6. verify that executing `echo $env:USERPROFILE` in a PowerShell terminal gives you your home-directory
 
