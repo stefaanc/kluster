@@ -1,13 +1,15 @@
 ## Setup PowerShell
 
-###### Setup the PowerShell profiles
+#### Setup the PowerShell profiles
 
 > :information_source:  
 > The following is based on [the project profiles described in the github PSCONSOLE repository](https://github.com/stefaanc/psconsole#project-profiles).  You can find more explanation on the what/why/how there.
 
 1. copy `~\Projects\kluster\downloads\@HOME-Projects_.psprofile.ps1` to your `~\Projects` folder.  This allows you to select a "default" project amongst all projects in this folder.  Make sure only one project is uncommented.
 
+   - rename this file to `.psprofile.json`
    - if you are using a different root folder for the "kluster" project, change the `. ~\Projects\kluster\.psprofile.ps1` line to `. ~\xyz\kluster\.psprofile.ps1`.
+   - update this file with links to your projects
 
 2. copy `~\Projects\kluster\downloads\@HOME-Documents-WindowsPowerShell_profile.ps1` to your `~\Documents\WindowsPowerShell` folder
 
@@ -25,13 +27,13 @@
 5. open a PowerShell terminal
 
    - if you get a warning that you cannot execute scripts, execute `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned`
-   - alternatively, you can also use the `@CP_Start-PowerShellUser` or `@CP_Start-PowerShellAdmin` shortcuts that are created in the `~\Projects\kluster\scripts` folder after [preparing the kluster environment](#prepare-the-kluster-environment).
+   - alternatively, you can also use the `@CP_Start-PowerShellUser` or `@CP_Start-PowerShellAdmin` shortcuts that are created in the `~\Projects\kluster\scripts` folder after [preparing the kluster environment](/readme.md#prepare-the-kluster-environment).
 
 6. verify that executing `echo $env:USERPROFILE` in a PowerShell terminal gives you your home-directory
 
    - we have seen this go wrong, but the remedy depends on your environment.  It is important that this gets sorted before you continue.
 
-###### Install the `PSReadLine` module
+#### Install the `PSReadLine` module
 
 > :information_source:  
 > The following is taken from [the github PSCONSOLE repository](https://github.com/stefaanc/psconsole#the-colors-of-the-console).

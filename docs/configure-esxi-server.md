@@ -1,20 +1,20 @@
 ## Configure ESXi Server
 
-###### Enable ESXi Shell and SSH services on the ESXi Server
+#### Enable ESXi Shell and SSH services on the ESXi Server
 
 1. browse to the ESXi management console, ignoring the `Not Secure` warning - we will solve this later 
 
 2. start the `TSM` and `TSM-SSH` services 
 
 
-###### Install the GuestIPHack on the ESXi server (for packer's vmware builders)
+#### Install the GuestIPHack on the ESXi server (for packer's vmware builders)
 
 1. use putty or some other tool to open a terminal into the ESXi server
 
 2. execute `esxcli system settings advanced set -o /Net/GuestIPHack -i 1`
 
 
-###### Install a vSphere Installation Bundle (VIB) for a VNC on the ESXi server (for packer's vmware builders) 
+#### Install a vSphere Installation Bundle (VIB) for a VNC on the ESXi server (for packer's vmware builders) 
 
 1. use putty or some other tool to open a terminal into the ESXi server
 
@@ -38,7 +38,7 @@
    or by executing `esxcli network firewall ruleset list`
 
 
-###### Install HTTPS certificates on the ESXi server
+#### Install HTTPS certificates on the ESXi server
 
 1. open a PowerShell terminal
 
