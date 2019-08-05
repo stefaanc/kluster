@@ -24,20 +24,20 @@
 #                "STEPS_COLORS={{ user `packer_hyperv_colors` }}"
 #            ],
 #            "scripts": [
-#                "{{ user `root` }}/scripts/Setup-WANSwitch.ps1"
+#                "{{ user `packer` }}/scripts/hyperv/Setup-WANSwitch.ps1"
 #            ]
 #        }
 #    ]
 #
 param(
-    [parameter(position=0)] $SWITCH_WAN = "$env:SWITCH_WAN",
-    [parameter(position=1)] $NETWORK_WAN_NIC = "$env:NETWORK_WAN_NIC",
-    [parameter(position=2)] $LOG_DIRECTORY = "$env:LOG_DIRECTORY",
-    [parameter(position=3)] $TEARDOWN_SCRIPT = "$env:TEARDOWN_SCRIPT"
+    [string]$SWITCH_WAN = "$env:SWITCH_WAN",
+    [string]$NETWORK_WAN_NIC = "$env:NETWORK_WAN_NIC",
+    [string]$LOG_DIRECTORY = "$env:LOG_DIRECTORY",
+    [string]$TEARDOWN_SCRIPT = "$env:TEARDOWN_SCRIPT"
 )
 if ( "$SWITCH_WAN" -eq "" ) { $SWITCH_WAN = "Virtual Switch External" }
 if ( "$NETWORK_WAN_NIC" -eq "" ) { $NETWORK_WAN_NIC = ( Get-NetAdapterHardwareInfo )[0].InterfaceDescription }
-if ( "$LOG_DIRECTORY" -eq "" ) { $LOG_DIRECTORY = "$ROOT\logs" }
+if ( "$LOG_DIRECTORY" -eq "" ) { $LOG_DIRECTORY = "$env:PACKER_ROOT\logs" }
 
 $STEPS_LOG_FILE = "$LOG_DIRECTORY\$( Get-Date -Format yyyyMMddTHHmmss.ffffZ )_setup-wanswitch.log"
 $STEPS_LOG_APPEND = $false

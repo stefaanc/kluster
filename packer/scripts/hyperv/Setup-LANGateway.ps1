@@ -26,24 +26,24 @@
 #                "STEPS_COLORS={{ user `packer_hyperv_colors` }}"
 #            ],
 #            "scripts": [
-#                "{{ user `root` }}/scripts/Setup-LANGateway.ps1"
+#                "{{ user `packer` }}/scripts/hyperv/Setup-LANGateway.ps1"
 #            ]
 #        }
 #    ]
 #
 param(
-    [parameter(position=0)] $TEMPLATE_DIRECTORY = "$env:TEMPLATE_DIRECTORY",
-    [parameter(position=1)] $VM_ROOT = "$env:VM_ROOT",
-    [parameter(position=2)] $VM_NAME = "$env:VM_NAME",
-    [parameter(position=2)] $IP_ADDRESS_LAN = "$env:IP_ADDRESS_LAN",
-    [parameter(position=3)] $LOG_DIRECTORY = "$env:LOG_DIRECTORY",
-    [parameter(position=4)] $TEARDOWN_SCRIPT = "$env:TEARDOWN_SCRIPT"
+    [string]$TEMPLATE_DIRECTORY = "$env:TEMPLATE_DIRECTORY",
+    [string]$VM_ROOT = "$env:VM_ROOT",
+    [string]$VM_NAME = "$env:VM_NAME",
+    [string]$IP_ADDRESS_LAN_GATEWAY = "$env:IP_ADDRESS_LAN_GATEWAY",
+    [string]$LOG_DIRECTORY = "$env:LOG_DIRECTORY",
+    [string]$TEARDOWN_SCRIPT = "$env:TEARDOWN_SCRIPT"
 )
 if ( "$TEMPLATE_DIRECTORY" -eq "" ) { $TEMPLATE_DIRECTORY = "$ROOT\datastore\templates\nethserver7" }
 if ( "$VM_ROOT" -eq "" ) { $VM_ROOT = "$ROOT\datastore" }
 if ( "$VM_NAME" -eq "" ) { $VM_NAME = "gateway-hyv" }
-if ( "$IP_ADDRESS_LAN" -eq "" ) { $IP_ADDRESS = "192.168.2.17" }
-if ( "$LOG_DIRECTORY" -eq "" ) { $LOG_DIRECTORY = "$ROOT\logs" }
+if ( "$IP_ADDRESS_LAN_GATEWAY" -eq "" ) { $IP_ADDRESS_IP_GATEWAY = "192.168.0.17" }
+if ( "$LOG_DIRECTORY" -eq "" ) { $LOG_DIRECTORY = "$env:PACKER_ROOT\logs" }
 
 $STEPS_LOG_FILE = "$LOG_DIRECTORY\$( Get-Date -Format yyyyMMddTHHmmss.ffffZ )_setup-langateway.log"
 $STEPS_LOG_APPEND = $false
@@ -104,7 +104,7 @@ do_step "Wait for VM `"$VM_NAME`" to become reachable"
 do {
     sleep 5
     do_echo "Waiting for the VM to become reachable..."
-    ping $IP_ADDRESS_LAN
+    ping $IP_ADDRESS_LAN_GATEWAY
 } until ( "$LASTEXITCODE" -eq "0" )
 
 #

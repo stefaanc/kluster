@@ -11,7 +11,7 @@
         "packer": "{{ env `PACKER_ROOT` }}",
         "packer_common_colors": "{{ env `PACKER_COMMON_COLORS` }}",
 
-        "datastore": null,
+        "datastore": "datastore",
 
         "vm_name": "centos7-hyv",
         "switch_wan": null,

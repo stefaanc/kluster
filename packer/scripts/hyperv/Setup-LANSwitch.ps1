@@ -25,22 +25,22 @@
 #                "STEPS_COLORS={{ user `packer_hyperv_colors` }}"
 #            ],
 #            "scripts": [
-#                "{{ user `root` }}/scripts/Setup-LANSwitch.ps1"
+#                "{{ user `packer` }}/scripts/hyperv/Setup-LANSwitch.ps1"
 #            ]
 #        }
 #    ]
 #
 param(
-    [parameter(position=0)] $SWITCH_LAN = "$env:SWITCH_LAN",
-    [parameter(position=1)] $IP_ADDRESS_HOST = "$env:IP_ADDRESS_HOST",
-    [parameter(position=2)] $IP_PREFIX = "$env:IP_PREFIX",
-    [parameter(position=3)] $LOG_DIRECTORY = "$env:LOG_DIRECTORY",
-    [parameter(position=4)] $TEARDOWN_SCRIPT = "$env:TEARDOWN_SCRIPT"
+    [string]$SWITCH_LAN = "$env:SWITCH_LAN",
+    [string]$IP_ADDRESS_HOST = "$env:IP_ADDRESS_HOST",
+    [string]$IP_PREFIX = "$env:IP_PREFIX",
+    [string]$LOG_DIRECTORY = "$env:LOG_DIRECTORY",
+    [string]$TEARDOWN_SCRIPT = "$env:TEARDOWN_SCRIPT"
 )
 if ( "$SWITCH_LAN" -eq "" ) { $SWITCH_LAN = "Virtual Switch Internal" }
 if ( "$IP_ADDRESS_HOST" -eq "" ) { $IP_ADDRESS_HOST = "192.168.0.254" }
 if ( "$IP_PREFIX" -eq "" ) { $IP_PREFIX = "24" }
-if ( "$LOG_DIRECTORY" -eq "" ) { $LOG_DIRECTORY = "$ROOT\logs" }
+if ( "$LOG_DIRECTORY" -eq "" ) { $LOG_DIRECTORY = "$env:PACKER_ROOT\logs" }
 
 $STEPS_LOG_FILE = "$LOG_DIRECTORY\$( Get-Date -Format yyyyMMddTHHmmss.ffffZ )_setup-lanswitch.log"
 $STEPS_LOG_APPEND = $false

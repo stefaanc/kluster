@@ -12,7 +12,7 @@
         "packer_common_colors": "{{ env `PACKER_COMMON_COLORS` }}",
         "packer_hyperv_colors": "{{ env `PACKER_HYPERV_COLORS` }}",
 
-        "datastore": null,
+        "datastore": "datastore",
 
         "source_path": "templates/centos7",
         "vm_name": "gateway-hyv",

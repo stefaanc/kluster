@@ -12,15 +12,15 @@
         "packer": "{{ env `PACKER_ROOT` }}",
         "packer_hyperv_colors": "{{ env `PACKER_HYPERV_COLORS` }}",
 
-        "datastore": null,
+        "datastore": "datastore",
 
         "template_directory": "templates/nethserver7",
         "vm_name": "gateway-hyv",
-        "ip_address_gateway": null,
+        "ip_address_lan_gateway": null,
 
         "teardown_script": "_hyperv-teardown-4.ps1"
     },
-    "sensitive-variables": [],
+    "sensitive-variables": [ "ip_address_lan_gateway" ],
     "builders": [
         {
             "type": "file",
@@ -38,7 +38,7 @@
                 "TEMPLATE_DIRECTORY={{ user `root` }}/{{ user `datastore` }}/{{ user `template_directory` }}",
                 "VM_ROOT={{ user `root` }}/{{ user `datastore` }}",
                 "VM_NAME={{ user `vm_name` }}",
-                "IP_ADDRESS_LAN={{ user `ip_address_lan` }}",
+                "IP_ADDRESS_LAN_GATEWAY={{ user `ip_address_lan_gateway` }}",
                 "LOG_DIRECTORY={{ user `packer` }}/logs",
                 "TEARDOWN_SCRIPT={{ user `packer` }}/{{ user `teardown_script` }}",
                 "STEPS_COLORS={{ user `packer_hyperv_colors` }}"

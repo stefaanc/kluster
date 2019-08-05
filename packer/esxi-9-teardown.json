@@ -1,0 +1,44 @@
+{
+    "_copyright_": "Copyright (c) 2019 Stefaan Coussement",
+    "_license_": "MIT",
+    "_repository_": "https://github.com/stefaanc/kluster",
+
+    "_use_": "packer build -color=false -on-error=ask -timestamp-ui -force -var-file $env:PACKER_ROOT/esxi-variables.json $env:PACKER_ROOT/esxi-9-teardown.json",
+
+    "variables": {
+        "packer": "{{ env `PACKER_ROOT` }}",
+        "packer_esxi_colors": "{{ env `PACKER_ESXI_COLORS` }}",
+
+        "remote_host": null,
+        "remote_username": null,
+        "remote_password": null,
+        "remote_datastore": "datastore1"
+    },
+    "sensitive-variables": [ "remote_host", "remote_username", "remote_password" ],
+    "builders": [
+        {
+            "type": "null",
+            "communicator": "none"
+        }
+    ],
+    "post-processors": [
+        {
+            "type": "shell-local",
+            "execute_command": ["PowerShell.exe", "-NoProfile", "{{.Vars}}{{.Script}}; exit $LASTEXITCODE"],
+            "env_var_format": "$env:%s=\"%s\"; ",
+            "tempfile_extension": ".ps1",
+            "environment_vars": [
+                "REMOTE_HOST={{ user `remote_host` }}",
+                "REMOTE_USERNAME={{ user `remote_username` }}",
+                "REMOTE_PASSWORD={{ user `remote_password` }}",
+                "REMOTE_DATASTORE={{ user `remote_datastore` }}",
+                "LOG_DIRECTORY={{ user `packer` }}/logs",
+                "TEARDOWN_DIRECTORY={{ user `packer` }}",
+                "STEPS_COLORS={{ user `packer_esxi_colors` }}"
+            ],
+            "scripts": [
+                "{{ user `packer` }}/scripts/esxi/Teardown.ps1"
+            ]
+        }
+    ]
+}

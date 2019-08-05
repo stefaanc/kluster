@@ -2,14 +2,15 @@
     "datastore": "datastore",
 
     "switch_wan": "Virtual Switch External",
-    "network_wan_nic": "Intel(R) Ethernet Connection I217-LM",
+    "network_wan_nic": "Intel(R) Ethernet Connection I217-LM",   #<<<<<<<<<<<<<< !!! needs update - see 'External Network' list-box in 'Hyper-V Virtual Switch Manager' 
+    "ip_address_lan_gateway": "X.X.X.17",   #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< !!! needs update - your host IP subnet
 
     "switch_lan": "Virtual Switch Internal",
-    "ip_domain": "stefaanc.kluster.local",
+    "ip_domain": "stefaanc.kluster.local",   #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< needs update - change 'stefaanc'
     "ip_address_host": "192.168.100.254",
     "ip_address_gateway": "192.168.100.1",
     "ip_prefix": "24",
 
-    "headless": "true",        
+    "headless": "true",
     "disable_breakpoint": "true"
 }

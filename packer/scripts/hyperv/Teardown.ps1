@@ -22,11 +22,11 @@
 #    ]
 #
 param(
-    [parameter(position=0)] $LOG_DIRECTORY = "$env:LOG_DIRECTORY",
-    [parameter(position=1)] $TEARDOWN_DIRECTORY = "$env:TEARDOWN_DIRECTORY"
+    [string]$LOG_DIRECTORY = "$env:LOG_DIRECTORY",
+    [string]$TEARDOWN_DIRECTORY = "$env:TEARDOWN_DIRECTORY"
 )
-if ( "$LOG_DIRECTORY" -eq "" ) { $LOG_DIRECTORY = "$PACKER_ROOT\logs" }
-if ( "$TEARDOWN_DIRECTORY" -eq "" ) { $TEARDOWN_DIRECTORY = "$PACKER_ROOT" }
+if ( "$LOG_DIRECTORY" -eq "" ) { $LOG_DIRECTORY = "$env:PACKER_ROOT\logs" }
+if ( "$TEARDOWN_DIRECTORY" -eq "" ) { $TEARDOWN_DIRECTORY = "$env:PACKER_ROOT" }
 
 $STEPS_LOG_FILE = "$LOG_DIRECTORY\$( Get-Date -Format yyyyMMddTHHmmss.ffffZ )_teardown.log"
 $STEPS_LOG_APPEND = $false

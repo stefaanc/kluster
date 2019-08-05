@@ -38,7 +38,7 @@ Get-ChildItem -Path "$ROOT\scripts\@PS_*.ps1" | ForEach-Object -Process {
 
     if ( -not ( Test-Path "$ROOT\scripts\@CP_$name.bat") ) {
         do_echo "@CP_$name"
-        New-Shortcut "$ROOT\scripts\@CP_$name" -Admin -TargetPath "C:\Windows\system32\WindowsPowerShell\v1.0\powershell.exe" -Arguments "-ExecutionPolicy Bypass -NoProfile -Command `"$psprofile; $ROOT\scripts\@PS_$name.ps1`"; Wait-Key; exit 0"
+        New-Shortcut "$ROOT\scripts\@CP_$name" -Admin -TargetPath "C:\Windows\system32\WindowsPowerShell\v1.0\powershell.exe" -Arguments "-ExecutionPolicy Bypass -NoProfile -NoExit -Command `"$psprofile; $ROOT\scripts\@PS_$name.ps1`"; Wait-Key; exit 0"
         Set-ShortcutColors "$ROOT\scripts\@CP_$name" -Theme "$powershell_theme"
         Set-ShortcutWindowSize "$ROOT\scripts\@CP_$name" -Width 150 -Height 50 -ScreenBufferHeight 8000
     }
@@ -61,7 +61,7 @@ Get-ChildItem -Path "$ROOT\packer\@PS_*.ps1" | ForEach-Object -Process {
     }
 
     do_echo "@CP_$name"
-    New-Shortcut "$ROOT\packer\@CP_$name" -Admin -TargetPath "C:\Windows\system32\WindowsPowerShell\v1.0\powershell.exe" -Arguments "-ExecutionPolicy Bypass -NoProfile -Command `"$psprofile; $ROOT\packer\@PS_$name.ps1`"; Wait-Key; exit 0"
+    New-Shortcut "$ROOT\packer\@CP_$name" -Admin -TargetPath "C:\Windows\system32\WindowsPowerShell\v1.0\powershell.exe" -Arguments "-ExecutionPolicy Bypass -NoProfile -NoExit -Command `"$psprofile; $ROOT\packer\@PS_$name.ps1`"; Wait-Key; exit 0"
     Set-ShortcutColors "$ROOT\packer\@CP_$name" -Theme "$theme"
     Set-ShortcutWindowSize "$ROOT\packer\@CP_$name" -Width 150 -Height 50 -ScreenBufferHeight 8000
 }
@@ -71,6 +71,8 @@ do_step "Copy shortcuts for packer to scripts folder"
 
 do_echo "@CP_Build-TemplatesHyperV"
 Copy-Item -Force "$ROOT\packer\@CP_hyperv-build.lnk" "$ROOT\scripts\@CP_Build-TemplatesHyperV.lnk"
+do_echo "@CP_Build-TemplatesESXi"
+Copy-Item -Force "$ROOT\packer\@CP_esxi-build.lnk" "$ROOT\scripts\@CP_Build-TemplatesESXi.lnk"
 
 #
 do_exit 0
