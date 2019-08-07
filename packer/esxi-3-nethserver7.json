@@ -1,0 +1,164 @@
+{
+    "_copyright_": "Copyright (c) 2019 Stefaan Coussement",
+    "_license_": "MIT",
+    "_repository_": "https://github.com/stefaanc/kluster",
+
+    "_requires_": "esxi-1-setup.json, esxi-2-centos7.json",
+    "_use_": "packer build -color=false -on-error=ask -timestamp-ui -force -var-file $env:PACKER_ROOT/esxi-variables.json $env:PACKER_ROOT/esxi-3-nethserver7.json",
+
+    "variables": {
+        "packer": "{{ env `PACKER_ROOT` }}",
+        "packer_esxi_colors": "{{ env `PACKER_ESXI_COLORS` }}",
+        "packer_common_colors": "{{ env `PACKER_COMMON_COLORS` }}",
+
+        "remote_host": null,
+        "remote_username": null,
+        "remote_password": null,
+        "remote_datastore": "datastore1",
+
+        "source_path": "templates/centos7/centos7-vmw.vmx",
+        "vm_name": "gateway-vmw",
+        "network_wan": null,
+        "network_lan": null,
+        "ip_domain": null,
+        "ip_address_gateway": null,
+        "ip_prefix": null,
+
+        "headless": "true",
+        "disable_breakpoint": "true",
+        "template_directory": "templates/nethserver7"
+    },
+    "sensitive-variables": [ "remote_password" ],
+    "builders": [
+        {
+            "type": "vmware-vmx",
+
+            "remote_type": "esx5",
+            "remote_host": "{{ user `remote_host` }}",
+            "remote_port": "22",
+            "remote_username": "{{ user `remote_username` }}",
+            "remote_password": "{{ user `remote_password` }}",
+            "remote_datastore": "{{ user `remote_datastore` }}",
+            "skip_validate_credentials": true,
+
+            "vnc_disable_password": true,
+            "vnc_port_min": "5900",
+            "vnc_port_max": "5964",
+
+            "vm_name": "{{ user `vm_name` }}",
+            "display_name": "{{ user `vm_name` }}",
+            "vmx_data": {
+                "ethernet0.addressType": "static",
+                "ethernet0.address": "00:00:02:01:00:21",
+                "ethernet1.present": "TRUE",
+                "ethernet1.networkName": "{{ user `network_lan` }}{{ user `name_suffix` }}",
+                "ethernet1.addressType": "static",
+                "ethernet1.address": "00:00:02:01:01:01",
+                "ethernet1.virtualDev": "vmxnet3",
+                "ethernet1.wakeOnPcktRcv": "FALSE",
+                "ethernet1.uptCompatibility": "TRUE"
+            },
+
+            "headless": "{{ user `headless` }}",
+            "source_path": "{{ user `source_path` }}",
+            "boot_wait": "0s",
+            "boot_command": "",
+
+            "communicator": "ssh",
+            "ssh_username": "root",
+            "ssh_password": "rootroot",
+            "ssh_timeout": "20m",
+
+            "shutdown_command": "shutdown -h now",
+            "skip_export": true
+        }
+    ],
+    "provisioners": [
+        {
+            "type": "file",
+            "source": "{{ user `packer` }}/scripts/common/uploads/",
+            "destination": "/tmp/"
+        },
+        {
+            "type": "shell",
+            "environment_vars": [
+                "VM_NAME={{ user `vm_name` }}",
+                "ADAPTER_LAN_DEVICE=ens192",
+                "ADAPTER_LAN_MAC=00:00:02:01:01:01",
+                "IP_DOMAIN={{ user `ip_domain` }}",
+                "IP_ADDRESS_GATEWAY={{ user `ip_address_gateway` }}",
+                "IP_PREFIX={{ user `ip_prefix` }}",
+                "STEPS_COLORS={{ user `packer_common_colors` }}"
+            ],
+            "remote_file": "configure-gateway.bash",
+            "script": "{{ user `packer` }}/scripts/common/configure-gateway.bash"
+        },
+        {
+            "type": "file",
+            "source": "/tmp/configure-gateway.log",
+            "destination": "{{ user `packer` }}/logs/{{ isotime \"20060102T150405.0000Z\" }}_configure-gateway.log",
+            "direction": "download"
+        },
+        {
+            "type": "shell",
+            "expect_disconnect": true,
+            "environment_vars": [
+                "STEPS_COLORS={{ user `packer_common_colors` }}"
+            ],
+            "remote_file": "install-nethserver7.bash",
+            "scripts": [
+                "{{ user `packer` }}/scripts/common/install-nethserver7.bash",
+                "{{ user `packer` }}/scripts/common/recover-install-nethserver7.bash"
+            ]
+        },
+        {
+            "type": "file",
+            "source": "/tmp/install-nethserver7.log",
+            "destination": "{{ user `packer` }}/logs/{{ isotime \"20060102T150405.0000Z\" }}_install-nethserver7.log",
+            "direction": "download"
+        },
+        {
+            "type": "shell",
+            "environment_vars": [
+                "ADAPTER_WAN_DEVICE=ens160",
+                "ADAPTER_LAN_DEVICE=ens192",
+                "IP_DOMAIN={{ user `ip_domain` }}",
+                "IP_ADDRESS_GATEWAY={{ user `ip_address_gateway` }}",
+                "IP_PREFIX={{ user `ip_prefix` }}",
+                "STEPS_COLORS={{ user `packer_common_colors` }}"
+            ],
+            "remote_file": "configure-nethserver7.bash",
+            "script": "{{ user `packer` }}/scripts/common/configure-nethserver7.bash"
+        },
+        {
+            "type": "file",
+            "source": "/tmp/configure-nethserver7.log",
+            "destination": "{{ user `packer` }}/logs/{{ isotime \"20060102T150405.0000Z\" }}_configure-nethserver7.log",
+            "direction": "download"
+        },
+        {
+            "type": "breakpoint",
+            "disable": "{{ user `disable_breakpoint` }}"
+        }
+    ],
+    "post-processors": [
+        {
+            "type": "shell-local",
+            "execute_command": ["PowerShell", "-NoProfile", "{{.Vars}}{{.Script}}; exit $LASTEXITCODE"],
+            "env_var_format": "$env:%s=\"%s\"; ",
+            "tempfile_extension": ".ps1",
+            "environment_vars": [
+                "REMOTE_HOST={{ user `remote_host` }}",
+                "REMOTE_USERNAME={{ user `remote_username` }}",
+                "REMOTE_PASSWORD={{ user `remote_password` }}",
+                "REMOTE_DATASTORE={{ user `remote_datastore` }}",
+                "LOG_DIRECTORY={{ user `packer` }}/logs",
+                "STEPS_COLORS={{ user `packer_esxi_colors` }}"
+            ],
+            "inline": [
+                "{{ user `packer` }}/scripts/esxi/Run-ESXIScript.ps1 -Command \"export-template.sh '{{ user `remote_datastore` }}' '{{ user `vm_name` }}' '{{ user `template_directory` }}'\"",
+                "{{ user `packer` }}/scripts/esxi/Run-ESXIScript.ps1 -Command \"delete-vm.sh '{{ user `remote_datastore` }}' '{{ user `vm_name` }}'\""
+            ]
+        }
+    ]
+}

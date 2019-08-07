@@ -3,8 +3,9 @@
     "_license_": "MIT",
     "_repository_": "https://github.com/stefaanc/kluster",
 
-    "_remark_": "if you run 'esxi-1-setup.json' a second time without first running 'esxi-9-teardown.json', the setup becomes permanant",
-    "_use_": "packer build -color=false -on-error=ask -timestamp-ui -force -var-file $env:PACKER_ROOT/esxi-variables.json $env:PACKER_ROOT/esxi-1-setup.json",
+    "_remark_": "if you run 'esxi-4-setup.json' a second time without first running 'esxi-9-teardown.json', the setup becomes permanant",
+    "_requires_": "esxi-1-setup.json, esxi-3-nethserver7.json",
+    "_use_": "packer build -color=false -on-error=ask -timestamp-ui -force -var-file $env:PACKER_ROOT/esxi-variables.json $env:PACKER_ROOT/esxi-4-setup.json",
 
     "variables": {
         "packer": "{{ env `PACKER_ROOT` }}",
@@ -13,37 +14,32 @@
         "remote_host": null,
         "remote_username": null,
         "remote_password": null,
+        "remote_datastore": "datastore1",
 
-        "switch_wan": null,
-        "network_wan": null,
-        "network_wan_nic": null,
-        
-        "switch_lan": null,
-        "network_lan": null,
+        "template_directory": "templates/nethserver7",
+        "vm_name": "gateway-vmw",
+        "ip_address_lan_gateway": null,
 
-        "teardown_script": "_esxi-teardown-1.ps1"
+        "teardown_script": "_esxi-teardown-4.ps1"
     },
     "sensitive-variables": [ "remote_password" ],
     "builders": [
         {
             "type": "file",
-            "content": "Remove-Item \"{{ user `packer` }}/{{ user `teardown_script` }}\"",
+            "content": "\nrm \"{{ user `packer` }}/{{ user `teardown_script` }}\"",
             "target": "{{ user `packer` }}/{{ user `teardown_script` }}"
         }
     ],
     "post-processors": [
         {
             "type": "shell-local",
-            "execute_command": ["PowerShell.exe", "-NoProfile", "{{.Vars}}{{.Script}}; exit $LASTEXITCODE"],
+            "execute_command": ["PowerShell", "-NoProfile", "{{.Vars}}{{.Script}}; exit $LASTEXITCODE"],
             "env_var_format": "$env:%s=\"%s\"; ",
             "tempfile_extension": ".ps1",
             "environment_vars": [
-                "SWITCH_WAN={{ user `switch_wan` }}",
-                "NETWORK_WAN={{ user `network_wan` }}",
-                "NETWORK_WAN_NIC={{ user `network_wan_nic` }}",
-                "SWITCH_LAN={{ user `switch_lan` }}",
-                "NETWORK_LAN={{ user `network_lan` }}",
-                "UPLOADS_DIRECTORY={{ user `packer` }}/scripts/esxi/uploads",
+                "TEMPLATE_DIRECTORY={{ user `template_directory` }}",
+                "VM_NAME={{ user `vm_name` }}",
+                "IP_ADDRESS_LAN_GATEWAY={{ user `ip_address_lan_gateway` }}",
                 "REMOTE_HOST={{ user `remote_host` }}",
                 "REMOTE_USERNAME={{ user `remote_username` }}",
                 "REMOTE_PASSWORD={{ user `remote_password` }}",
@@ -53,9 +49,7 @@
                 "STEPS_COLORS={{ user `packer_esxi_colors` }}"
             ],
             "scripts": [
-                "{{ user `packer` }}/scripts/esxi/Setup-WANSwitch.ps1",
-                "{{ user `packer` }}/scripts/esxi/Setup-LANSwitch.ps1",
-                "{{ user `packer` }}/scripts/esxi/Upload-ESXiScripts.ps1"
+                "{{ user `packer` }}/scripts/esxi/Setup-LANGateway.ps1"
             ]
         }
     ]

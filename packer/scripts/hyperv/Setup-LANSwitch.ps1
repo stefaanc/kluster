@@ -33,13 +33,14 @@
 param(
     [string]$SWITCH_LAN = "$env:SWITCH_LAN",
     [string]$IP_ADDRESS_HOST = "$env:IP_ADDRESS_HOST",
-    [string]$IP_PREFIX = "$env:IP_PREFIX",
-    [string]$LOG_DIRECTORY = "$env:LOG_DIRECTORY",
-    [string]$TEARDOWN_SCRIPT = "$env:TEARDOWN_SCRIPT"
+    [string]$IP_PREFIX = "$env:IP_PREFIX"
 )
 if ( "$SWITCH_LAN" -eq "" ) { $SWITCH_LAN = "Virtual Switch Internal" }
 if ( "$IP_ADDRESS_HOST" -eq "" ) { $IP_ADDRESS_HOST = "192.168.0.254" }
 if ( "$IP_PREFIX" -eq "" ) { $IP_PREFIX = "24" }
+
+$LOG_DIRECTORY = "$env:LOG_DIRECTORY"
+$TEARDOWN_SCRIPT = "$env:TEARDOWN_SCRIPT"
 if ( "$LOG_DIRECTORY" -eq "" ) { $LOG_DIRECTORY = "$env:PACKER_ROOT\logs" }
 
 $STEPS_LOG_FILE = "$LOG_DIRECTORY\$( Get-Date -Format yyyyMMddTHHmmss.ffffZ )_setup-lanswitch.log"

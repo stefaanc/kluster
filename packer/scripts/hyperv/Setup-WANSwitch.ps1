@@ -31,12 +31,13 @@
 #
 param(
     [string]$SWITCH_WAN = "$env:SWITCH_WAN",
-    [string]$NETWORK_WAN_NIC = "$env:NETWORK_WAN_NIC",
-    [string]$LOG_DIRECTORY = "$env:LOG_DIRECTORY",
-    [string]$TEARDOWN_SCRIPT = "$env:TEARDOWN_SCRIPT"
+    [string]$NETWORK_WAN_NIC = "$env:NETWORK_WAN_NIC"
 )
 if ( "$SWITCH_WAN" -eq "" ) { $SWITCH_WAN = "Virtual Switch External" }
 if ( "$NETWORK_WAN_NIC" -eq "" ) { $NETWORK_WAN_NIC = ( Get-NetAdapterHardwareInfo )[0].InterfaceDescription }
+
+$LOG_DIRECTORY = "$env:LOG_DIRECTORY"
+$TEARDOWN_SCRIPT = "$env:TEARDOWN_SCRIPT"
 if ( "$LOG_DIRECTORY" -eq "" ) { $LOG_DIRECTORY = "$env:PACKER_ROOT\logs" }
 
 $STEPS_LOG_FILE = "$LOG_DIRECTORY\$( Get-Date -Format yyyyMMddTHHmmss.ffffZ )_setup-wanswitch.log"

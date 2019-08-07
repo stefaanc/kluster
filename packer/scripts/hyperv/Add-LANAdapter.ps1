@@ -28,9 +28,10 @@
 param(
     [string]$VM_NAME = "$env:VM_NAME",
     [string]$SWITCH_LAN = "$env:SWITCH_LAN",
-    [string]$ADAPTER_LAN_MAC = "$env:ADAPTER_LAN_MAC",
-    [string]$LOG_DIRECTORY = "$env:LOG_DIRECTORY"
+    [string]$ADAPTER_LAN_MAC = "$env:ADAPTER_LAN_MAC"
 )
+
+$LOG_DIRECTORY = "$env:LOG_DIRECTORY"
 if ( "$LOG_DIRECTORY" -eq "" ) { $LOG_DIRECTORY = "$env:PACKER_ROOT\logs" }
 
 $STEPS_LOG_FILE = "$LOG_DIRECTORY\$( Get-Date -Format yyyyMMddTHHmmss.ffffZ )_add-lanadapter.log"

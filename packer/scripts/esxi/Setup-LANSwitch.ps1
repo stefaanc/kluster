@@ -6,18 +6,18 @@
 #
 # use:
 #
-#    "provisioners": [
+#    "post-processors": [
 #        {
 #            "type": "shell-local",
 #            "execute_command": ["PowerShell", "-NoProfile", "{{.Vars}}{{.Script}}; exit $LASTEXITCODE"],
 #            "env_var_format": "$env:%s=\"%s\"; ",
 #            "tempfile_extension": ".ps1",
 #            "environment_vars": [
+#                "SWITCH_LAN={{ user `switch_lan` }}",
+#                "NETWORK_LAN={{ user `network_lan` }}"
 #                "REMOTE_HOST={{ user `remote_host` }}",
 #                "REMOTE_USERNAME={{ user `remote_username` }}",
 #                "REMOTE_PASSWORD={{ user `remote_password` }}",
-#                "SWITCH_LAN={{ user `switch_lan` }}",
-#                "NETWORK_LAN={{ user `network_lan` }}"
 #                "LOG_DIRECTORY={{ user `packer` }}/logs",
 #                "TEARDOWN_SCRIPT={{ user `packer` }}/{{ user `teardown_script` }}",
 #                "STEPS_COLORS={{ user `packer_esxi_colors` }}"
@@ -29,16 +29,17 @@
 #    ]
 #
 param(
-    [string]$REMOTE_HOST = "$env:REMOTE_HOST",
-    [string]$REMOTE_USERNAME = "$env:REMOTE_USERNAME",
-    [string]$REMOTE_PASSWORD = "$env:REMOTE_PASSWORD",
     [string]$SWITCH_LAN = "$env:SWITCH_LAN",
-    [string]$NETWORK_LAN = "$env:NETWORK_LAN",
-    [string]$LOG_DIRECTORY = "$env:LOG_DIRECTORY",
-    [string]$TEARDOWN_SCRIPT = "$env:TEARDOWN_SCRIPT"
+    [string]$NETWORK_LAN = "$env:NETWORK_LAN"
 )
 if ( "$SWITCH_LAN" -eq "" ) { $SWITCH_LAN = "vSwitch1" }
 if ( "$NETWORK_LAN" -eq "" ) { $NETWORK_LAN = "NAT Network" }
+
+$REMOTE_HOST = "$env:REMOTE_HOST"
+$REMOTE_USERNAME = "$env:REMOTE_USERNAME"
+$REMOTE_PASSWORD = "$env:REMOTE_PASSWORD"
+$LOG_DIRECTORY = "$env:LOG_DIRECTORY"
+$TEARDOWN_SCRIPT = "$env:TEARDOWN_SCRIPT"
 if ( "$LOG_DIRECTORY" -eq "" ) { $LOG_DIRECTORY = "$env:PACKER_ROOT\logs" }
 
 $STEPS_LOG_FILE = "$LOG_DIRECTORY\$( Get-Date -Format yyyyMMddTHHmmss.ffffZ )_setup-lanswitch.log"
@@ -59,7 +60,7 @@ do_step "Create LAN switch `"$SWITCH_LAN`" if it does not exist yet"
 if ( -not (Get-VirtualSwitch -VMHost "$REMOTE_HOST" -Name "$SWITCH_LAN" -ErrorAction Ignore) ) {
     $CMD = "esxcli network vswitch standard add --vswitch-name='$SWITCH_LAN'"
     $ErrorActionPreference = 'Continue'
-    plink -no-antispoof -pw "$REMOTE_PASSWORD" "${REMOTE_USERNAME}@${REMOTE_HOST}" "$CMD"; do_catch_exit -IgnoreExitStatus
+    plink -batch -pw "$REMOTE_PASSWORD" "${REMOTE_USERNAME}@${REMOTE_HOST}" "$CMD"; do_catch_exit -IgnoreExitStatus
     $ErrorActionPreference = 'Stop'
     do_echo "Switch `"$SWITCH_LAN`" created."
 
@@ -69,7 +70,7 @@ do_step "Remove LAN switch ```"$SWITCH_LAN```" if it exists"
 if ( Get-VirtualSwitch -VMHost "$REMOTE_HOST" -Name "$SWITCH_LAN" -ErrorAction Ignore ) {
     `$CMD = "esxcli network vswitch standard remove --vswitch-name='$SWITCH_LAN'"
     `$ErrorActionPreference = 'Continue'
-    plink -no-antispoof -pw "`$REMOTE_PASSWORD" "`${REMOTE_USERNAME}@`${REMOTE_HOST}" "`$CMD"; do_catch_exit -IgnoreExitStatus
+    plink -batch -pw "`$REMOTE_PASSWORD" "`${REMOTE_USERNAME}@`${REMOTE_HOST}" "`$CMD"; do_catch_exit -IgnoreExitStatus
     `$ErrorActionPreference = 'Stop'
     do_echo "Switch ```"$SWITCH_LAN```" removed."
 }
@@ -85,7 +86,7 @@ do_step "Create LAN port group `"$NETWORK_LAN`" if it does not exist yet"
 if ( -not (Get-VirtualPortGroup -VMHost "$REMOTE_HOST" -Name "$NETWORK_LAN" -ErrorAction Ignore) ) {
     $CMD = "esxcli network vswitch standard portgroup add --vswitch-name='$SWITCH_LAN' --portgroup-name='$NETWORK_LAN'"
     $ErrorActionPreference = 'Continue'
-    plink -no-antispoof -pw "$REMOTE_PASSWORD" "${REMOTE_USERNAME}@${REMOTE_HOST}" "$CMD"; do_catch_exit -IgnoreExitStatus
+    plink -batch -pw "$REMOTE_PASSWORD" "${REMOTE_USERNAME}@${REMOTE_HOST}" "$CMD"; do_catch_exit -IgnoreExitStatus
     $ErrorActionPreference = 'Stop'
     do_echo "LAN port group `"$NETWORK_LAN`" created."
 
@@ -95,7 +96,7 @@ do_step "Remove LAN port group ```"$NETWORK_LAN```" if it exists"
 if ( Get-VirtualPortGroup -VMHost "$REMOTE_HOST" -Name "$NETWORK_LAN" -ErrorAction Ignore ) {
     `$CMD = "esxcli network vswitch standard portgroup remove --vswitch-name='$SWITCH_LAN' --portgroup-name='$NETWORK_LAN'"
     `$ErrorActionPreference = 'Continue'
-    plink -no-antispoof -pw "`$REMOTE_PASSWORD" "`${REMOTE_USERNAME}@`${REMOTE_HOST}" "`$CMD"; do_catch_exit -IgnoreExitStatus
+    plink -batch -pw "`$REMOTE_PASSWORD" "`${REMOTE_USERNAME}@`${REMOTE_HOST}" "`$CMD"; do_catch_exit -IgnoreExitStatus
     `$ErrorActionPreference = 'Stop'
     do_echo "LAN port group ```"$NETWORK_LAN```" removed."
 }

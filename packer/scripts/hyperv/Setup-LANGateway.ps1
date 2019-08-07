@@ -10,17 +10,17 @@
 #
 # use in packer:
 #
-#    "provisioners": [
+#    "post-processors": [
 #        {
 #            "type": "shell-local",
 #            "execute_command": ["PowerShell", "-NoProfile", "{{.Vars}}{{.Script}}; exit $LASTEXITCODE"],
 #            "env_var_format": "$env:%s=\"%s\"; ",
 #            "tempfile_extension": ".ps1",
 #            "environment_vars": [
-#                "TEMPLATE_DIRECTORY={{ user `root` }}/{{ user `datastore` }}/{{ user `template_directory` }}",
-#                "VM_ROOT={{ user `root` }}/{{ user `datastore` }}",
+#                "TEMPLATE_DIRECTORY={{ user `packer` }}/{{ user `datastore` }}/{{ user `template_directory` }}",
+#                "VM_ROOT={{ user `packer` }}/{{ user `datastore` }}",
 #                "VM_NAME={{ user `vm_name` }}",
-#                "IP_ADDRESS_LAN={{ user `ip_address_lan` }}",
+#                "IP_ADDRESS_LAN_GATEWAY={{ user `ip_address_lan_gateway` }}",
 #                "LOG_DIRECTORY={{ user `packer` }}/logs",
 #                "TEARDOWN_SCRIPT={{ user `packer` }}/{{ user `teardown_script` }}",
 #                "STEPS_COLORS={{ user `packer_hyperv_colors` }}"
@@ -35,14 +35,15 @@ param(
     [string]$TEMPLATE_DIRECTORY = "$env:TEMPLATE_DIRECTORY",
     [string]$VM_ROOT = "$env:VM_ROOT",
     [string]$VM_NAME = "$env:VM_NAME",
-    [string]$IP_ADDRESS_LAN_GATEWAY = "$env:IP_ADDRESS_LAN_GATEWAY",
-    [string]$LOG_DIRECTORY = "$env:LOG_DIRECTORY",
-    [string]$TEARDOWN_SCRIPT = "$env:TEARDOWN_SCRIPT"
+    [string]$IP_ADDRESS_LAN_GATEWAY = "$env:IP_ADDRESS_LAN_GATEWAY"
 )
 if ( "$TEMPLATE_DIRECTORY" -eq "" ) { $TEMPLATE_DIRECTORY = "$ROOT\datastore\templates\nethserver7" }
 if ( "$VM_ROOT" -eq "" ) { $VM_ROOT = "$ROOT\datastore" }
 if ( "$VM_NAME" -eq "" ) { $VM_NAME = "gateway-hyv" }
 if ( "$IP_ADDRESS_LAN_GATEWAY" -eq "" ) { $IP_ADDRESS_IP_GATEWAY = "192.168.0.17" }
+
+$LOG_DIRECTORY = "$env:LOG_DIRECTORY"
+$TEARDOWN_SCRIPT = "$env:TEARDOWN_SCRIPT"
 if ( "$LOG_DIRECTORY" -eq "" ) { $LOG_DIRECTORY = "$env:PACKER_ROOT\logs" }
 
 $STEPS_LOG_FILE = "$LOG_DIRECTORY\$( Get-Date -Format yyyyMMddTHHmmss.ffffZ )_setup-langateway.log"
@@ -66,8 +67,8 @@ if ( -not ( Get-hyvVM -Name "$VM_NAME" -ErrorAction Ignore ) ) {
     Import-VM -Path "$TEMPLATE_DIRECTORY\Virtual Machines\$GUID.vmcx" -Copy -VirtualMachinePath "$VM_DIRECTORY" -VhdDestinationPath "$VM_DIRECTORY\Virtual Hard Disks"
     do_echo "VM `"$VM_NAME`" imported."
 
-    # Prepare tear-down script
-    $TEARDOWN_ENTRY = @"
+    if ( "$TEARDOWN_SCRIPT" -ne "" ) {
+        $TEARDOWN_ENTRY = @"
 do_step "Remove VM ```"$VM_NAME```" if it exists"
 if ( Get-hyvVM -Name "$VM_NAME" -ErrorAction Ignore ) {
     Remove-hyvVM -Name "$VM_NAME" -Force
@@ -76,7 +77,8 @@ if ( Get-hyvVM -Name "$VM_NAME" -ErrorAction Ignore ) {
 Remove-Item -Recurse "$VM_DIRECTORY" -ErrorAction Ignore
 
 "@
-    $TEARDOWN = $TEARDOWN_ENTRY + $TEARDOWN
+        $TEARDOWN = $TEARDOWN_ENTRY + $TEARDOWN
+    }
 }
 
 #
@@ -86,8 +88,8 @@ if ( ( Get-hyvVM -Name "$VM_NAME" ).State -ne 'Running' ) {
     Start-hyvVM -Name "$VM_NAME"
     do_echo "VM `"$VM_NAME`" started."
 
-    # Prepare tear-down script
-    $TEARDOWN_ENTRY = @"
+    if ( "$TEARDOWN_SCRIPT" -ne "" ) {
+        $TEARDOWN_ENTRY = @"
 do_step "Stop VM ```"$VM_NAME```" if it is running"
 if ( ( Get-hyvVM -Name "$VM_NAME" -ErrorAction Ignore ) -and ( ( Get-hyvVM -Name "$VM_NAME" ).State -eq 'Running' ) ) {
     Stop-hyvVM -Name "$VM_NAME" -Force
@@ -95,7 +97,8 @@ if ( ( Get-hyvVM -Name "$VM_NAME" -ErrorAction Ignore ) -and ( ( Get-hyvVM -Name
 }
 
 "@
-    $TEARDOWN = $TEARDOWN_ENTRY + $TEARDOWN
+        $TEARDOWN = $TEARDOWN_ENTRY + $TEARDOWN
+    }
 }
 
 #

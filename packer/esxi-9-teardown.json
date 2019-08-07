@@ -14,7 +14,7 @@
         "remote_password": null,
         "remote_datastore": "datastore1"
     },
-    "sensitive-variables": [ "remote_host", "remote_username", "remote_password" ],
+    "sensitive-variables": [ "remote_password" ],
     "builders": [
         {
             "type": "null",

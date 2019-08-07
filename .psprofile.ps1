@@ -19,13 +19,14 @@ $env:PACKER_ROOT = "$ROOT/packer".Replace("\", "/")
 $env:PACKER_NO_COLOR = "true"
 $env:PACKER_CACHE_DIR = "$env:PACKER_ROOT/packer_cache"
 $env:PACKER_LOG_PATH = "$env:PACKER_ROOT/logs/_packer.log"
-$env:PACKER_LOG = "0"
+$env:PACKER_LOG = "1"
 
 if ( ( $HOST.UI.RawUI.ForegroundColor -eq 'DarkYellow' ) -and ( $HOST.UI.RawUI.BackgroundColor -eq 'DarkMagenta' ) ) {
     # we are working with a legacy Powershell instance
     $env:PACKER_COMMON_COLORS = "DarkRed,DarkCyan,Green,Yellow,Red"
     $env:PACKER_ESXI_COLORS   = "DarkGray,DarkCyan,Green,Yellow,Red"
     $env:PACKER_HYPERV_COLORS = "DarkGray,DarkCyan,Green,Yellow,Red"
+    $env:PACKER_KVM_COLORS    = "DarkGray,DarkCyan,Green,Yellow,Red"
     #                            normal,bright,green,yellow,red
 }
 else {
@@ -34,5 +35,6 @@ else {
     $env:PACKER_COMMON_COLORS = "Blue,DarkCyan,Green,Yellow,Red"
     $env:PACKER_ESXI_COLORS   = "DarkGreen,DarkCyan,Green,Yellow,Red"
     $env:PACKER_HYPERV_COLORS = "DarkBlue,DarkCyan,Green,Yellow,Red"
+    $env:PACKER_KVM_COLORS    = "Magenta,DarkCyan,Green,Yellow,Red"
     #                            normal,bright,green,yellow,red
 }

@@ -21,10 +21,10 @@
 #        }
 #    ]
 #
-param(
-    [string]$LOG_DIRECTORY = "$env:LOG_DIRECTORY",
-    [string]$TEARDOWN_DIRECTORY = "$env:TEARDOWN_DIRECTORY"
-)
+param()
+
+$LOG_DIRECTORY = "$env:LOG_DIRECTORY"
+$TEARDOWN_DIRECTORY = "$env:TEARDOWN_DIRECTORY"
 if ( "$LOG_DIRECTORY" -eq "" ) { $LOG_DIRECTORY = "$env:PACKER_ROOT\logs" }
 if ( "$TEARDOWN_DIRECTORY" -eq "" ) { $TEARDOWN_DIRECTORY = "$env:PACKER_ROOT" }
 

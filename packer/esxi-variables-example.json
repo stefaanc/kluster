@@ -6,7 +6,8 @@
 
     "switch_wan": "vSwitch0",
     "network_wan": "VM Network",
-    
+    "ip_address_lan_gateway": "X.X.X.33",   #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< needs update - your host IP subnet
+
     "switch_lan": "vSwitch1 - stefaanc",   #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< needs update - change 'stefaanc'
     "network_lan": "NAT Network - stefaanc",   #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< needs update - change 'stefaanc'
     "ip_domain": "stefaanc.kluster.local",   #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< needs update - change 'stefaanc'
