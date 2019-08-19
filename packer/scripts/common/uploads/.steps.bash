@@ -132,7 +132,7 @@ if [[ "$STEPS_STAGE" = "" ]] ; then
         set +u   # disable checking for undefined vars
         export STEPS_LOG_APPEND="$STEPS_LOG_APPEND"
         set -u
-        if [[ "$STEPS_LOG_APPEND" = "" ]] ; then
+        if [[ "$STEPS_LOG_APPEND" = "" ]] || [[ "$STEPS_LOG_APPEND" = "false" ]] ; then
             exec 111>&1 1> $STEPS_LOG_FILE 2> >( tee "./_stderr.log" )
         else
             exec 111>&1 1>> $STEPS_LOG_FILE 2> >( tee "./_stderr.log" )
@@ -157,7 +157,7 @@ do_script () {
     local hostname="@ Host: $HOSTNAME"
     local log="$STEPS_LOG_FILE"
     if [[ "$log" != "" ]] ; then 
-        if [[ "$STEPS_LOG_APPEND" = "" ]] ; then 
+        if [[ "$STEPS_LOG_APPEND" = "" ]] || [[ "$STEPS_LOG_APPEND" = "false" ]] ; then 
             local log="> Log:  $log"
         else 
             local log=">> Log: $log"

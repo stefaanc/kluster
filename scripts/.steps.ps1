@@ -155,12 +155,13 @@ function do_exec {   # called from 1st 'do_script'
 
     $global:LASTSTEP = 0
 
-    $global:LASTEXITSCRIPT=""
-    $global:LASTEXITCOMMAND=""
-    $global:LASTEXITLINENO=""
-    $global:LASTEXITCHARNO=""
-    $global:LASTEXITMESSAGE=""
-    $global:LASTEXITTRAPPED=""
+    $global:LASTIGNOREDEXITCODE = ""
+    $global:LASTEXITSCRIPT = ""
+    $global:LASTEXITCOMMAND = ""
+    $global:LASTEXITLINENO = ""
+    $global:LASTEXITCHARNO = ""
+    $global:LASTEXITMESSAGE = ""
+    $global:LASTEXITTRAPPED = ""
 
     #Set-Alias 'echo' 'do_echo'                                                 # !!! NEEDS WORK !!!
     #Set-Alias 'exit' 'do_exit'                                                 # !!! NEEDS WORK !!!
@@ -186,7 +187,7 @@ function do_exec {   # called from 1st 'do_script'
                 New-Item -ItemType directory -Path "$logpath" | Out-Null
             }
 
-            if ( !$STEPS_LOG_APPEND ) {
+            if ( ( "$STEPS_LOG_APPEND" -eq "" ) -or ( "$STEPS_LOG_APPEND".ToLower() -eq "false" ) ) {
                 & "$STEPS_SCRIPT" @STEPS_PARAMS 5>&1 4>&1 3>&1 2>&1 > "$STEPS_LOG_FILE"
             }
             else {
@@ -214,7 +215,7 @@ function do_script {
         $hostname = "@ Host: $env:COMPUTERNAME"
         if ( "$STEPS_LOG_FILE" -ne "" ) {
             $log = "$STEPS_LOG_FILE".Replace("/", "\")
-            if ( !$STEPS_LOG_APPEND ) {
+            if ( ( "$STEPS_LOG_APPEND" -eq "" ) -or ( "$STEPS_LOG_APPEND".ToLower() -eq "false" ) ) {
                 $log = "> Log:  $log"
             }
             else {
@@ -291,12 +292,13 @@ function do_echo {
 function do_reset {
     # Write-Host "${N}##### do_reset${X}"   # for debugging
     cmd /c "exit 0"   # reset $?, reset $LASTEXITCODE
-    $global:LASTEXITSCRIPT=""
-    $global:LASTEXITCOMMAND=""
-    $global:LASTEXITLINENO=""
-    $global:LASTEXITCHARNO=""
-    $global:LASTEXITMESSAGE=""
-    $global:LASTEXITTRAPPED=""
+    $global:LASTIGNOREDEXITCODE = ""
+    $global:LASTEXITSCRIPT = ""
+    $global:LASTEXITCOMMAND = ""
+    $global:LASTEXITLINENO = ""
+    $global:LASTEXITCHARNO = ""
+    $global:LASTEXITMESSAGE = ""
+    $global:LASTEXITTRAPPED = ""
     $Error.Clear()
 }
 
@@ -346,7 +348,10 @@ function do_exit {
 
         cmd /c "exit $exitcode"   # set correct $LASTEXITCODE
 
-        throw $LASTEXITMESSAGE
+        # use the following instead of 'throw $LASTEXITMESSAGE'
+        # to get the script/line/char info of the calling script/function in '$Error'
+        # as opposed to getting the info of this function in '$Error'
+        Write-Error "$LASTEXITMESSAGE" -ErrorAction 'Stop'
     }
 }
 
@@ -402,7 +407,10 @@ function do_catch_exit {
                 $global:LASTEXITMESSAGE = "caught exitcode $exitcode"
             }
 
-            throw $LASTEXITMESSAGE
+            # use the following instead of 'throw $LASTEXITMESSAGE'
+            # to get the script/line/char info of the calling script/function in '$Error'
+            # as opposed to getting the info of this function in '$Error'
+            Write-Error "$LASTEXITMESSAGE" -ErrorAction 'Stop'
         }
     }
 }
@@ -460,12 +468,19 @@ function do_trap {
         $text = "ERROR: $exitcode, script: $script, line: $lineno, char: $charno, cmd: '$( "$command".Replace("'", "`'") )' > `"$( "$message".Replace('"', '`"') )`""
 
         Write-Information "${R}${STEPS_INDENT}$text${X}"
+        Write-Information ""
+        "$( $Error[0].ScriptStackTrace )" | do_echo -Color "${R}"
         Write-Information "${N}${STEPS_PREVIOUS_INDENT}${X}"
+        Write-Information ""
 
         Write-Output ""
         Write-Output "#"
         Write-Output "# $text"
         Write-Output "#"
+        Write-Output ""
+        Write-Output "##############################"
+        Write-Output "$( $Error[0].ScriptStackTrace )"
+        Write-Output "##############################"
         Write-Output ""
 
         if ( "$LASTEXITLINENO" -eq "" ) { # there typically is no error record when thrown by 'do_exit' or 'do_catch_exit'
