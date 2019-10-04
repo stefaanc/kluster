@@ -10,4 +10,8 @@
 /datastore
 
 /packer/packer_cache
-/packer/*variables.json
+/packer/**/*variables.json
+
+/terraform/.terraform
+/terraform/state
+/terraform/**/*variables.auto.tfvars

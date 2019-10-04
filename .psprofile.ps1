@@ -38,3 +38,11 @@ else {
     $env:PACKER_KVM_COLORS    = "Magenta,DarkCyan,Green,Yellow,Red"
     #                            normal,bright,green,yellow,red
 }
+
+$env:TF_ROOT = "$ROOT/terraform".Replace("\", "/")
+$env:TF_INPUT = "false"
+$env:TF_LOG_PATH = "$env:TF_ROOT/logs/_terraform.log"
+$env:TF_LOG = "TRACE"
+
+$env:TF_VAR_root = "$ROOT"
+$env:TF_VAR_terraform = "$env:TF_ROOT"

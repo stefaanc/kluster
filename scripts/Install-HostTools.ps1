@@ -24,14 +24,18 @@ if ( $Force ) {
     choco upgrade wget -y
     do_echo "cURL"
     choco upgrade cURL -y
-    do_echo "openSSL.light"
-    choco upgrade openSSL.light -y
+#    do_echo "openSSL.light"
+#    choco upgrade openSSL.light -y
     do_echo "PuTTY"
     choco upgrade PuTTY -y
     do_echo "WinSCP"
     choco upgrade WinSCP -y
     do_echo "packer"
     choco upgrade packer -y
+    do_echo "terraform"
+    choco upgrade terraform -y
+#    do_echo "terragrunt"
+#    choco upgrade terragrunt -y
 }
 else {
     do_echo "chocolateygui"
@@ -40,35 +44,56 @@ else {
     choco upgrade wget
     do_echo "cURL"
     choco upgrade cURL
-    do_echo "openSSL.light"
-    choco upgrade openSSL.light
+#    do_echo "openSSL.light"
+#    choco upgrade openSSL.light
     do_echo "PuTTY"
     choco upgrade PuTTY
     do_echo "WinSCP"
     choco upgrade WinSCP
     do_echo "packer"
     choco upgrade Packer
+    do_echo "terraform"
+    choco upgrade terraform
+#    do_echo "terragrunt"
+#    choco upgrade terragrunt
 }
 
 #
 do_step "Install/upgrade powershell modules"
 
-# we cannot install "vmware.PowerCLI" via chocolatey
+# we cannot install "VMware.PowerCLI" via chocolatey
 # because we need the -AllowClobber option to ignore collisions with the hyper-v module
-do_echo "vmware.PowerCLI"
-$installed = Get-InstalledModule -Name vmware.powerCLI -ErrorAction 'Continue'
-$found = Find-Module -Name vmware.powerCLI
+do_echo "VMware.PowerCLI"
+$installed = Get-InstalledModule -Name VMware.powerCLI -ErrorAction 'Continue'
+$found = Find-Module -Name VMware.powerCLI
 if ( $installed -and ( $installed.Version.ToString() -ne $found.Version.ToString() ) ) {
-    Uninstall-Module -Name vmware.powerCLI
+    Uninstall-Module -Name VMware.powerCLI -Force
     $installed = $null
 }
 if ( !$installed ) {
-    do_echo "... This will take a while.  Please wait ..."
+    do_echo -Color Yellow ".   This may take a while, up to 15 minutes."
     if ( $Force ) {
-        Install-Module -Name vmware.powerCLI -AllowClobber -Force
+        $job = Start-Job {
+            Install-Module -Name VMware.powerCLI -Scope CurrentUser -AllowClobber -Force
+        }
     }
     else {
-        Install-Module -Name vmware.powerCLI -AllowClobber
+        $job = Start-Job {
+            Install-Module -Name VMware.powerCLI -Scope CurrentUser -AllowClobber
+        }
+    }
+    do_cleanup '$job | Remove-Job'
+
+    while ( ( $job.State -ne "Completed" ) -and ( $job.State -ne "Failed" ) ) {
+        do_echo -Color Yellow ".   Waiting for the installation to complete..."
+        Start-Sleep 60
+    }
+
+    try {
+        Receive-Job -Job $job | do_echo
+    }
+    catch {
+        do_exit $_.Exception.Message
     }
 }
 

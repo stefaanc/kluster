@@ -1,0 +1,69 @@
+{
+    "variables": {
+        "_use_": "packer build -on-error=ask -timestamp-ui -force hyperv-centos7-bios.json",
+
+        "_todo-1_": "for ssh: use certificate instead of password",
+
+        "home": "{{ env `HOMEDRIVE` }}{{ env `HOMEPATH` }}",
+
+        "vm_name": "centos7-bios",
+        "switch_name": "Virtual Switch External",
+
+        "iso_server_1": "http://centos.serverspace.co.uk/centos",
+        "iso_server_2": "http://centos.mirroring.pulsant.co.uk",
+        "iso_server_3": "http://centos.mirrors.nublue.co.uk",
+
+        "iso_path": "/7.6.1810/isos/x86_64/CentOS-7-x86_64-Minimal-1810.iso",
+        "iso_checksum": "38d5d51d9d100fd73df031ffd6bd8b1297ce24660dc8c13a3b8b4534a4bd291c",
+
+        "output_directory": "../datastore/hyperv/centos7",
+        "headless": "true"        
+    },
+    "sensitive-variables": [],
+    "builders": [
+        {
+            "type": "hyperv-iso",
+
+            "vm_name": "{{ user `vm_name` }}",
+            "output_directory": "{{ user `output_directory` }}",
+            "generation": 1,
+            "cpus": 2,
+            "memory": 2048,
+            "enable_dynamic_memory": true,
+            "disk_size": 40960,
+            "disk_block_size": 1,
+            "switch_name": "{{ user `switch_name` }}",
+            "guest_additions_mode": "disable",
+
+            "iso_urls": [
+               "{{ user `iso_server_1` }}{{ user `iso_path` }}",
+               "{{ user `iso_server_2` }}{{ user `iso_path` }}",
+               "{{ user `iso_server_3` }}{{ user `iso_path` }}"
+            ],
+            "iso_checksum": "{{ user `iso_checksum` }}",
+            "iso_checksum_type": "sha256",
+
+            "headless": "{{ user `headless` }}",
+            "floppy_files": [
+                "./kickstart/{{ user `vm_name` }}.cfg"
+            ],
+            "boot_wait": "10s",
+            "boot_command": [
+                "<tab>",
+                " ip={{ user `ip_address` }}::{{ user `ip_gateway` }}:{{ user `ip_mask` }}:{{ user `vm_name` }}::none",
+                " nameserver={{ user `ip_gateway` }}",
+                " inst.ks=hd:fd0:/{{ user `vm_name` }}.cfg",
+                " inst.nosave=input_ks",
+                "<enter>",
+                "<wait>"
+            ],
+
+            "communicator": "ssh",
+            "ssh_username": "root",
+            "ssh_password": "rootroot",
+            "ssh_timeout": "20m",
+
+            "shutdown_command": "shutdown --poweroff now"
+        }
+    ]
+}

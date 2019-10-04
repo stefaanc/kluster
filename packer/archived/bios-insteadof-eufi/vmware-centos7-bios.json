@@ -1,0 +1,95 @@
+{
+    "variables": {
+        "_use_": "packer build -on-error=ask -timestamp-ui -var 'remote_host=HOST' -var 'remote_password=PASSWORD' -force vmware-centos7-bios.json",
+
+        "_todo-1_": "for ip: use dhcp (needs separate switch for nat and 'pfsense' vm)",
+        "_todo-2_": "for ssh: use certificate iso password",
+
+        "home": "{{ env `HOMEDRIVE` }}{{ env `HOMEPATH` }}",
+
+        "remote_host": null,
+        "remote_username": "root",
+        "remote_password": null,
+        "remote_datastore": "datastore1",
+
+        "vm_name": "centos7",
+        "output_directory": "./vmware-centos7-bios",
+        "ip_address": "192.168.2.252",
+        "ip_mask": "255.255.255.0",
+        "ip_gateway": "192.168.2.1",
+
+        "iso_server_1": "http://centos.serverspace.co.uk/centos",
+        "iso_server_2": "http://centos.mirroring.pulsant.co.uk",
+        "iso_server_3": "http://centos.mirrors.nublue.co.uk",
+
+        "iso_path": "/7.6.1810/isos/x86_64/CentOS-7-x86_64-Minimal-1810.iso",
+        "iso_checksum": "38d5d51d9d100fd73df031ffd6bd8b1297ce24660dc8c13a3b8b4534a4bd291c",
+
+        "headless": "true"
+    },
+    "sensitive-variables": [ "remote_password" ],
+    "builders": [
+        {
+            "type": "vmware-iso",
+            "skip_export": true,
+
+            "remote_type": "esx5",
+            "remote_host": "{{ user `remote_host` }}",
+            "remote_port": "22",
+            "remote_username": "{{ user `remote_username` }}",
+            "remote_password": "{{ user `remote_password` }}",
+            "remote_datastore": "{{ user `remote_datastore` }}",
+            "skip_validate_credentials": true,
+
+            "vnc_disable_password": true,
+            "vnc_port_min": "5900",
+            "vnc_port_max": "5964",
+
+            "vm_name": "{{ user `vm_name` }}",
+            "vmdk_name": "{{ user `vm_name` }}",
+            "display_name": "{{ user `vm_name` }}",
+            "output_directory": "{{ user `output_directory` }}",
+            "cpus": 2,
+            "cores": 1,
+            "memory": 2048,
+            "disk_size": 40960,
+            "disk_type_id": "thin",
+            "disk_adapter_type": "scsi",
+            "network_adapter_type": "vmxnet3",
+            "vmx_data": {
+                "ethernet0.networkName": "VM Network"
+            },
+
+            "iso_urls": [
+               "{{ user `iso_server_1` }}{{ user `iso_path` }}",
+               "{{ user `iso_server_2` }}{{ user `iso_path` }}",
+               "{{ user `iso_server_3` }}{{ user `iso_path` }}"
+            ],
+            "iso_checksum": "{{ user `iso_checksum` }}",
+            "iso_checksum_type": "sha256",
+
+            "headless": "{{ user `headless` }}",
+            "guest_os_type": "centos7-64",
+            "floppy_files": [
+                "./kickstart/{{ user `vm_name` }}.cfg"
+            ],
+            "boot_wait": "5s",
+            "boot_command": [
+                "<tab>",
+                " ip={{ user `ip_address` }}::{{ user `ip_gateway` }}:{{ user `ip_mask` }}:{{ user `vm_name` }}::none",
+                " nameserver={{ user `ip_gateway` }}",
+                " inst.ks=hd:fd0:/{{ user `vm_name` }}.cfg",
+                " inst.nosave=input_ks",
+                "<enter>",
+                "<wait>"
+            ],
+
+            "communicator": "ssh",
+            "ssh_username": "root",
+            "ssh_password": "rootroot",
+            "ssh_timeout": "20m",
+
+            "shutdown_command": "shutdown --poweroff now"
+        }
+    ]
+}
